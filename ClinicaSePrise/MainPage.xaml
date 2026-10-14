@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.MainPage"
+             BackgroundColor="{StaticResource Fondo}">
+
+    <ContentPage.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="{StaticResource Borde}" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style x:Key="MenuItem" TargetType="Border">
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="Padding" Value="14,12" />
+        </Style>
+        <Style x:Key="MenuText" TargetType="Label">
+            <Setter Property="TextColor" Value="{StaticResource Gris}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid ColumnDefinitions="260,*">
+
+        <!-- SIDEBAR -->
+        <Border Grid.Column="0" BackgroundColor="White" Stroke="{StaticResource Borde}" Padding="16">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Clínica SePrise" FontSize="20" FontAttributes="Bold" />
+                <Label Text="Gestión médica" TextColor="{StaticResource Gris}" Margin="0,0,0,24" />
+                <Label Text="MENÚ PRINCIPAL" FontSize="11" TextColor="{StaticResource Gris}" Margin="0,0,0,8" />
+
+                <VerticalStackLayout Spacing="4" BindableLayout.ItemsSource="{Binding Pantallas}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource MenuItem}">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding .}" Value="Dashboard">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource AzulClaro}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding .}" Style="{StaticResource MenuText}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding .}" Value="Dashboard">
+                                            <Setter Property="TextColor" Value="{StaticResource Azul}" />
+                                            <Setter Property="FontAttributes" Value="Bold" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- CONTENIDO -->
+        <ScrollView Grid.Column="1">
+            <VerticalStackLayout Padding="40,30" Spacing="24">
+
+                <!-- Barra superior -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Border Style="{StaticResource Card}" Padding="14,0" HeightRequest="48" WidthRequest="420" HorizontalOptions="Start">
+                        <Entry Placeholder="Buscar pacientes por nombre o DNI..." />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                        <Label Text="{Binding Usuario}" FontAttributes="Bold" HorizontalOptions="End" />
+                        <Label Text="{Binding Rol}" FontSize="12" TextColor="{StaticResource Gris}" HorizontalOptions="End" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Saludo + botón -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="{Binding Fecha}" TextColor="{StaticResource Azul}" FontSize="13" />
+                        <Label Text="{Binding Usuario, StringFormat='Buenos días, {0}'}" FontSize="32" />
+                        <Label Text="Este es el resumen de actividad de hoy." TextColor="{StaticResource Gris}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1" Text="+  Nuevo turno" BackgroundColor="{StaticResource Azul}"
+                            TextColor="White" CornerRadius="10" HeightRequest="50" VerticalOptions="End"
+                            Clicked="OnNuevoTurno" />
+                </Grid>
+
+                <!-- Tarjetas -->
+                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="20">
+                    <Border Grid.Column="0" Style="{StaticResource Card}">
+                        <VerticalStackLayout>
+                            <Label Text="Turnos de hoy" TextColor="{StaticResource Gris}" />
+                            <Label Text="{Binding TurnosHoy}" FontSize="28" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <VerticalStackLayout>
+                            <Label Text="Pacientes atendidos" TextColor="{StaticResource Gris}" />
+                            <Label Text="{Binding Atendidos}" FontSize="28" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource Card}">
+                        <VerticalStackLayout>
+                            <Label Text="En sala de espera" TextColor="{StaticResource Gris}" />
+                            <Label Text="{Binding EnEspera}" FontSize="28" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Column="3" Style="{StaticResource Card}">
+                        <VerticalStackLayout>
+                            <Label Text="Insumos críticos" TextColor="{StaticResource Gris}" />
+                            <Label Text="{Binding InsumosCriticos}" FontSize="28" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Listas -->
+                <Grid ColumnDefinitions="2*,*" ColumnSpacing="20">
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Próximos turnos" FontSize="18" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Turnos}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="80,*,*,100" Padding="0,10">
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding Hora}" FontAttributes="Bold" />
+                                                <Label Text="{Binding Duracion}" FontSize="12" TextColor="{StaticResource Gris}" />
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout Grid.Column="1">
+                                                <Label Text="{Binding Paciente}" FontAttributes="Bold" />
+                                                <Label Text="{Binding Dni}" FontSize="12" TextColor="{StaticResource Gris}" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="2" Text="{Binding Profesional}" />
+                                            <Label Grid.Column="3" Text="{Binding Estado}" FontAttributes="Bold" TextColor="{StaticResource Azul}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="Confirmado">
+                                                        <Setter Property="TextColor" Value="Green" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="En espera">
+                                                        <Setter Property="TextColor" Value="Orange" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Stock crítico" FontSize="18" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Stock}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto" Padding="0,10">
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding Nombre}" FontAttributes="Bold" />
+                                                <Label Text="{Binding Sector}" FontSize="12" TextColor="{StaticResource Gris}" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding Stock, StringFormat='{0} u.'}" TextColor="Red" VerticalOptions="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
