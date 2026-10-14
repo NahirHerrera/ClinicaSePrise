@@ -7,8 +7,9 @@ namespace ClinicaSePrise
         public App()
         {
             InitializeComponent();
+
+            // Establecer la ventana inicial apuntando al Login de forma limpia
+            MainPage = new NavigationPage(new LoginPage());
         }
-        protected override Window CreateWindow(IActivationState? activationState) =>
-            new Window(new MainPage()) { Width = 1400, Height = 850 };
     }
 }

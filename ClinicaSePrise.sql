@@ -1,0 +1,396 @@
+-- =====================================================
+--  CLÍNICA SEPRISE - Base de datos
+--  Consultorios Externos y Estudios Diagnósticos
+-- =====================================================
+
+DROP DATABASE IF EXISTS ClinicaSePrise;
+CREATE DATABASE ClinicaSePrise;
+USE ClinicaSePrise;
+
+-- =====================================================
+--  TABLAS BASE
+-- =====================================================
+
+CREATE TABLE Paciente (
+    idPaciente INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    dni VARCHAR(20) UNIQUE NOT NULL,
+    telefono VARCHAR(20),
+    email VARCHAR(255),
+    modalidadCobertura VARCHAR(50),
+    obraSocial VARCHAR(100),
+    nroAfiliado VARCHAR(50),
+    nroHistoriaClinica VARCHAR(50)
+);
+
+CREATE TABLE Profesional (
+    idProfesional INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    nroMatricula VARCHAR(50) UNIQUE NOT NULL,
+    especialidad VARCHAR(100),
+    consultorioAsignado VARCHAR(50),
+    insumosRequeridos VARCHAR(100)
+);
+
+-- =====================================================
+--  ROLES Y USUARIOS (login y permisos por actor)
+-- =====================================================
+
+CREATE TABLE Rol (
+    idRol INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(30) UNIQUE NOT NULL
+);
+
+CREATE TABLE RolPantalla (
+    idRol INT NOT NULL,
+    pantalla VARCHAR(30) NOT NULL,
+    PRIMARY KEY (idRol, pantalla),
+    FOREIGN KEY (idRol) REFERENCES Rol(idRol)
+);
+
+CREATE TABLE Usuario (
+    idUsuario INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    usuario VARCHAR(50) UNIQUE NOT NULL,
+    contrasenia VARCHAR(255) NOT NULL,
+    idRol INT NOT NULL,
+    idPaciente INT NULL,
+    idProfesional INT NULL,
+    FOREIGN KEY (idRol) REFERENCES Rol(idRol),
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idProfesional) REFERENCES Profesional(idProfesional)
+);
+
+-- =====================================================
+--  CIRCUITO A: CONSULTORIOS EXTERNOS
+-- =====================================================
+
+CREATE TABLE Turno (
+    idTurno INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idPaciente INT,
+    idProfesional INT,
+    especialidad VARCHAR(100),
+    fechaHora DATETIME,
+    tipoTurno VARCHAR(50),
+    duracion INT,
+    modalidadSolicitud VARCHAR(50),
+    estado VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idProfesional) REFERENCES Profesional(idProfesional)
+);
+
+CREATE TABLE Agenda (
+    idAgenda INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idProfesional INT,
+    especialidad VARCHAR(100),
+    disponibilidad VARCHAR(100),
+    duracionMinima INT,
+    sobreturnosPermitidos INT,
+    recordatorio BOOLEAN,
+    FOREIGN KEY (idProfesional) REFERENCES Profesional(idProfesional)
+);
+
+CREATE TABLE Atencion (
+    idAtencion INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idPaciente INT,
+    idProfesional INT,
+    fechaHoraFin DATETIME,
+    indicacionNuevoTurno BOOLEAN,
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idProfesional) REFERENCES Profesional(idProfesional)
+);
+
+CREATE TABLE Honorario (
+    idHonorario INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idProfesional INT,
+    periodoLiquidacion VARCHAR(50),
+    cantidadPacientes INT,
+    monto DECIMAL(12,2),
+    FOREIGN KEY (idProfesional) REFERENCES Profesional(idProfesional)
+);
+
+-- =====================================================
+--  CIRCUITO B: ESTUDIOS DIAGNÓSTICOS
+-- =====================================================
+
+CREATE TABLE Estudio (
+    idEstudio INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    especialidad VARCHAR(100),
+    requisitosPrevios VARCHAR(100),
+    horarioEspecifico VARCHAR(50),
+    responsable VARCHAR(100)
+);
+
+CREATE TABLE TurnoEstudio (
+    idTurno INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idPaciente INT,
+    idEstudio INT,
+    fechaHora DATETIME,
+    modalidadSolicitud VARCHAR(50),
+    requiereTurno BOOLEAN,
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idEstudio) REFERENCES Estudio(idEstudio)
+);
+
+CREATE TABLE AgendaEstudio (
+    idAgenda INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sector VARCHAR(100),
+    disponibilidad VARCHAR(100),
+    duracionEstimada INT,
+    recordatorio BOOLEAN
+);
+
+CREATE TABLE Insumo (
+    idInsumo INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    idEstudio INT,
+    stock INT,
+    stockMinimo INT NOT NULL DEFAULT 10,
+    estadoReposicion VARCHAR(50),
+    FOREIGN KEY (idEstudio) REFERENCES Estudio(idEstudio)
+);
+
+CREATE TABLE Comprobante (
+    idComprobante INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idPaciente INT,
+    idEstudio INT,
+    fechaAtencion DATETIME,
+    comprobanteRetiro BOOLEAN,
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idEstudio) REFERENCES Estudio(idEstudio)
+);
+
+CREATE TABLE Derivacion (
+    idDerivacion INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idPaciente INT,
+    origen VARCHAR(50),
+    idEstudio INT,
+    estado VARCHAR(50),
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idEstudio) REFERENCES Estudio(idEstudio)
+);
+
+-- =====================================================
+--  FACTURAS (lo que abona el paciente)
+--  Se asocia a un turno de consultorio (idTurno)
+--  o a un turno de estudio (idTurnoEstudio)
+-- =====================================================
+
+CREATE TABLE Factura (
+    idFactura INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nroComprobante VARCHAR(20) UNIQUE NOT NULL,
+    idPaciente INT NOT NULL,
+    idTurno INT NULL,
+    idTurnoEstudio INT NULL,
+    fechaEmision DATETIME NOT NULL,
+    concepto VARCHAR(100),
+    monto DECIMAL(12,2) NOT NULL,
+    medioPago VARCHAR(30),
+    estado VARCHAR(20) NOT NULL DEFAULT 'Pagada',
+    FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
+    FOREIGN KEY (idTurno) REFERENCES Turno(idTurno),
+    FOREIGN KEY (idTurnoEstudio) REFERENCES TurnoEstudio(idTurno)
+);
+
+
+-- =====================================================
+--  DATOS DE PRUEBA
+-- =====================================================
+
+INSERT INTO Paciente (idPaciente, nombre, apellido, dni, telefono, email, modalidadCobertura) VALUES
+(1, 'Juan', 'Pérez', '12345678', '1144556677', 'juan.perez@mail.com', 'Particular'),
+(2, 'Ana', 'López', '87654321', '1199887766', 'ana.lopez@mail.com', 'Obra Social'),
+(3, 'Carlos', 'Martínez', '45678912', '1133224455', 'carlos.m@mail.com', 'Particular'),
+(4, 'Lucía', 'Fernández', '78912345', '1177445566', 'lucia.f@mail.com', 'Obra Social'),
+(5, 'Pedro', 'García', '32165498', '1166554433', 'pedro.g@mail.com', 'Particular');
+
+INSERT INTO Profesional (idProfesional, nombre, apellido, nroMatricula, especialidad, consultorioAsignado) VALUES
+(1, 'María', 'Gómez', 'MAT-001', 'Cardiología', 'Consultorio 3'),
+(2, 'Jorge', 'Ramírez', 'MAT-002', 'Pediatría', 'Consultorio 1'),
+(3, 'Sofía', 'Torres', 'MAT-003', 'Dermatología', 'Consultorio 5'),
+(4, 'Martín', 'Suárez', 'MAT-004', 'Neurología', 'Consultorio 2'),
+(5, 'Laura', 'Díaz', 'MAT-005', 'Traumatología', 'Consultorio 4');
+
+-- Roles (uno por actor del diagrama de casos de uso)
+INSERT INTO Rol (idRol, nombre) VALUES
+(1, 'Paciente'),
+(2, 'Recepcion'),
+(3, 'Medico'),
+(4, 'Administracion'),
+(5, 'Guardia'),
+(6, 'Laboratorio'),
+(7, 'Asistencial');
+
+-- Pantallas del menú que ve cada rol
+INSERT INTO RolPantalla (idRol, pantalla) VALUES
+(1, 'Dashboard'), (1, 'Turnos'), (1, 'Comprobantes'),
+(2, 'Dashboard'), (2, 'Turnos'), (2, 'Agenda'), (2, 'Pacientes'), (2, 'Comprobantes'),
+(3, 'Dashboard'), (3, 'Turnos'), (3, 'Agenda'), (3, 'Pacientes'),
+(4, 'Dashboard'), (4, 'Turnos'), (4, 'Agenda'), (4, 'Pacientes'), (4, 'Estudios'), (4, 'Insumos'), (4, 'Comprobantes'), (4, 'Honorarios'),
+(5, 'Dashboard'), (5, 'Estudios'),
+(6, 'Dashboard'), (6, 'Estudios'), (6, 'Insumos'), (6, 'Comprobantes'),
+(7, 'Dashboard'), (7, 'Estudios'), (7, 'Insumos'), (7, 'Comprobantes');
+
+-- Usuarios (contraseña en texto simple solo para pruebas; en la app real va con hash)
+INSERT INTO Usuario (usuario, contrasenia, idRol, idPaciente, idProfesional) VALUES
+('juan', '1234', 1, 1, NULL),
+('recepcion', '1234', 2, NULL, NULL),
+('mgomez', '1234', 3, NULL, 1),
+('andrea', '1234', 4, NULL, NULL),
+('guardia', '1234', 5, NULL, NULL),
+('laboratorio', '1234', 6, NULL, NULL),
+('asistencial', '1234', 7, NULL, NULL);
+
+-- Turnos de consultorio
+INSERT INTO Turno (idTurno, idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado) VALUES
+(1, 1, 1, 'Cardiología', '2026-10-10 09:00:00', 'Normal', 30, 'App', 'Atendido'),
+(2, 2, 2, 'Pediatría', '2026-10-11 11:00:00', 'Sobreturno', 20, 'Sistema', 'Atendido'),
+(3, 3, 3, 'Dermatología', '2026-10-12 15:00:00', 'Normal', 25, 'App', 'Atendido'),
+(4, 4, 4, 'Neurología', '2026-10-13 10:30:00', 'Salud Mental', 40, 'Sistema', 'Cancelado'),
+(5, 5, 5, 'Traumatología', '2026-10-14 08:45:00', 'Fisio-Kinesiología', 35, 'App', 'Confirmado');
+
+-- Turnos de HOY (usan CURDATE para que el dashboard siempre tenga datos)
+INSERT INTO Turno (idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado) VALUES
+(1, 1, 'Cardiología', TIMESTAMP(CURDATE(), '09:00:00'), 'Normal', 30, 'App', 'Atendido'),
+(2, 2, 'Pediatría', TIMESTAMP(CURDATE(), '10:00:00'), 'Normal', 20, 'App', 'En espera'),
+(3, 3, 'Dermatología', TIMESTAMP(CURDATE(), '10:30:00'), 'Normal', 30, 'Sistema', 'Confirmado'),
+(4, 4, 'Neurología', TIMESTAMP(CURDATE(), '11:00:00'), 'Normal', 40, 'App', 'Confirmado');
+
+INSERT INTO Estudio (idEstudio, nombre, especialidad, requisitosPrevios, horarioEspecifico, responsable) VALUES
+(1, 'Ecografía abdominal', 'Diagnóstico por imágenes', 'Ayuno 8 horas', '08:00-12:00', 'Sector Imágenes'),
+(2, 'Resonancia magnética', 'Diagnóstico por imágenes', 'Sin objetos metálicos', '09:00-17:00', 'Sector Resonancia'),
+(3, 'Electrocardiograma', 'Cardiología', 'Sin requisitos', '08:00-14:00', 'Cardiología'),
+(4, 'Análisis de sangre', 'Laboratorio', 'Ayuno 12 horas', '07:00-11:00', 'Laboratorio Central'),
+(5, 'Radiografía de tórax', 'Diagnóstico por imágenes', 'Sin requisitos', '10:00-16:00', 'Sector Rayos X');
+
+INSERT INTO TurnoEstudio (idTurno, idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno) VALUES
+(1, 1, 1, '2026-10-11 10:00:00', 'App', 1),
+(2, 2, 2, '2026-10-12 12:00:00', 'Sistema', 1),
+(3, 3, 3, '2026-10-13 09:30:00', 'App', 1),
+(4, 4, 4, '2026-10-14 08:00:00', 'Sistema', 0),
+(5, 5, 5, '2026-10-15 15:00:00', 'App', 1);
+
+INSERT INTO Agenda (idAgenda, idProfesional, especialidad, disponibilidad, duracionMinima, sobreturnosPermitidos, recordatorio) VALUES
+(1, 1, 'Cardiología', 'Lunes 9-12', 30, 2, 1),
+(2, 2, 'Pediatría', 'Martes 10-14', 20, 1, 1),
+(3, 3, 'Dermatología', 'Miércoles 15-18', 25, 2, 0),
+(4, 4, 'Neurología', 'Jueves 9-12', 40, 1, 1),
+(5, 5, 'Traumatología', 'Viernes 8-11', 35, 2, 0);
+
+INSERT INTO Atencion (idAtencion, idPaciente, idProfesional, fechaHoraFin, indicacionNuevoTurno) VALUES
+(1, 1, 1, '2026-10-10 09:45:00', 1),
+(2, 2, 2, '2026-10-11 11:30:00', 0),
+(3, 3, 3, '2026-10-12 15:30:00', 1),
+(4, 4, 4, '2026-10-13 11:15:00', 1),
+(5, 5, 5, '2026-10-14 09:20:00', 0);
+
+-- Atención de HOY
+INSERT INTO Atencion (idPaciente, idProfesional, fechaHoraFin, indicacionNuevoTurno) VALUES
+(1, 1, TIMESTAMP(CURDATE(), '09:40:00'), 0);
+
+INSERT INTO Honorario (idHonorario, idProfesional, periodoLiquidacion, cantidadPacientes, monto) VALUES
+(1, 1, 'Octubre 2026', 10, 100000.00),
+(2, 2, 'Octubre 2026', 8, 80000.00),
+(3, 3, 'Octubre 2026', 12, 120000.00),
+(4, 4, 'Octubre 2026', 6, 60000.00),
+(5, 5, 'Octubre 2026', 9, 90000.00);
+
+INSERT INTO AgendaEstudio (idAgenda, sector, disponibilidad, duracionEstimada, recordatorio) VALUES
+(1, 'Imágenes', 'Lunes 8-12', 30, 1),
+(2, 'Resonancia', 'Martes 9-17', 45, 1),
+(3, 'Cardiología', 'Miércoles 8-14', 20, 0),
+(4, 'Laboratorio', 'Jueves 7-11', 15, 1),
+(5, 'Rayos X', 'Viernes 10-16', 25, 0);
+
+INSERT INTO Insumo (idInsumo, nombre, idEstudio, stock, stockMinimo, estadoReposicion) VALUES
+(1, 'Gel conductor', 1, 50, 10, 'Disponible'),
+(2, 'Contrastante RM', 2, 20, 25, 'Reposición'),
+(3, 'Electrodos', 3, 100, 20, 'Disponible'),
+(4, 'Tubos de ensayo', 4, 200, 50, 'Disponible'),
+(5, 'Placas radiográficas', 5, 30, 40, 'Reposición');
+
+INSERT INTO Comprobante (idComprobante, idPaciente, idEstudio, fechaAtencion, comprobanteRetiro) VALUES
+(1, 1, 1, '2026-10-11 10:30:00', 1),
+(2, 2, 2, '2026-10-12 12:30:00', 1),
+(3, 3, 3, '2026-10-13 10:00:00', 0),
+(4, 4, 4, '2026-10-14 08:30:00', 1),
+(5, 5, 5, '2026-10-15 15:30:00', 0);
+
+INSERT INTO Derivacion (idDerivacion, idPaciente, origen, idEstudio, estado) VALUES
+(1, 1, 'Guardia Médica', 1, 'Pendiente'),
+(2, 2, 'Internación', 2, 'Completada'),
+(3, 3, 'Guardia Médica', 3, 'Pendiente'),
+(4, 4, 'Internación', 4, 'En proceso'),
+(5, 5, 'Guardia Médica', 5, 'Completada');
+
+INSERT INTO Factura (nroComprobante, idPaciente, idTurno, idTurnoEstudio, fechaEmision, concepto, monto, medioPago, estado) VALUES
+('0001-00000001', 1, 1, NULL, '2026-10-10 08:50:00', 'Consulta Cardiología', 25000.00, 'Tarjeta', 'Pagada'),
+('0001-00000002', 2, 2, NULL, '2026-10-11 10:50:00', 'Consulta Pediatría', 18000.00, 'Efectivo', 'Pagada'),
+('0001-00000003', 3, 3, NULL, '2026-10-12 14:50:00', 'Consulta Dermatología', 22000.00, 'Transferencia', 'Pagada'),
+('0001-00000004', 1, NULL, 1, '2026-10-11 09:50:00', 'Ecografía abdominal', 30000.00, 'Tarjeta', 'Pagada'),
+('0001-00000005', 4, 4, NULL, '2026-10-13 10:00:00', 'Consulta Neurología', 28000.00, 'Efectivo', 'Anulada');
+
+
+-- =====================================================
+--  CONSULTAS DE PRUEBA
+-- =====================================================
+
+-- Listar todos los pacientes
+SELECT * FROM Paciente;
+
+-- Buscar turnos de un paciente específico
+SELECT t.idTurno, p.nombre, p.apellido, t.fechaHora, t.tipoTurno, t.estado
+FROM Turno t
+JOIN Paciente p ON t.idPaciente = p.idPaciente
+WHERE p.dni = '12345678';
+
+-- Ver profesionales por especialidad
+SELECT nombre, apellido, especialidad
+FROM Profesional;
+
+-- Consultar estudios y sus requisitos
+SELECT nombre, requisitosPrevios
+FROM Estudio;
+
+-- Listar comprobantes con paciente y estudio
+SELECT c.idComprobante, p.nombre AS paciente, e.nombre AS estudio, c.fechaAtencion
+FROM Comprobante c
+JOIN Paciente p ON c.idPaciente = p.idPaciente
+JOIN Estudio e ON c.idEstudio = e.idEstudio;
+
+-- Login: validar usuario y contraseña, y traer el rol
+SELECT u.idUsuario, u.usuario, r.nombre AS rol, u.idRol
+FROM Usuario u
+JOIN Rol r ON u.idRol = r.idRol
+WHERE u.usuario = 'andrea' AND u.contrasenia = '1234';
+
+-- Pantallas del menú según el rol (Administracion = 4)
+SELECT pantalla FROM RolPantalla WHERE idRol = 4;
+
+-- Facturas de un paciente
+SELECT nroComprobante, fechaEmision, concepto, monto, medioPago, estado
+FROM Factura
+WHERE idPaciente = 1;
+
+-- Dashboard: tarjetas
+SELECT COUNT(*) AS turnosHoy FROM Turno WHERE DATE(fechaHora) = CURDATE();
+SELECT COUNT(*) AS atendidos FROM Atencion WHERE DATE(fechaHoraFin) = CURDATE();
+SELECT COUNT(*) AS enEspera FROM Turno WHERE DATE(fechaHora) = CURDATE() AND estado = 'En espera';
+SELECT COUNT(*) AS insumosCriticos FROM Insumo WHERE stock <= stockMinimo;
+
+-- Dashboard: próximos turnos de hoy
+SELECT t.fechaHora, t.duracion, p.nombre AS paciente, p.dni,
+       pr.nombre AS profesional, t.estado
+FROM Turno t
+JOIN Paciente p ON t.idPaciente = p.idPaciente
+JOIN Profesional pr ON t.idProfesional = pr.idProfesional
+WHERE DATE(t.fechaHora) = CURDATE()
+ORDER BY t.fechaHora;
+
+-- Dashboard: stock crítico
+SELECT i.nombre, e.responsable AS sector, i.stock
+FROM Insumo i
+JOIN Estudio e ON i.idEstudio = e.idEstudio
+WHERE i.stock <= i.stockMinimo;

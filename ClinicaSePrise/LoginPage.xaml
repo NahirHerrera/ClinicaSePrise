@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.LoginPage"
+             BackgroundColor="#F5F6F8"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid BackgroundColor="#F5F6F8">
+        <!-- Tarjeta Central de Login -->
+        <Frame VerticalOptions="Center" 
+               HorizontalOptions="Center"
+               WidthRequest="420"
+               CornerRadius="20"
+               HasShadow="True"
+               BackgroundColor="White"
+               BorderColor="Transparent"
+               Padding="35,40">
+
+            <VerticalStackLayout Spacing="20">
+
+                <!-- Logo / Encabezado -->
+                <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                    <Label Text="Clínica SePrise" 
+                           FontSize="28" 
+                           FontAttributes="Bold" 
+                           TextColor="#1E293B" 
+                           HorizontalOptions="Center" />
+
+                    <Label Text="Gestión Médica Institucional" 
+                           FontSize="14" 
+                           TextColor="#64748B" 
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Separador / Saludo -->
+                <Label Text="Iniciar Sesión" 
+                       FontSize="18" 
+                       FontAttributes="Bold" 
+                       TextColor="#334155" 
+                       Margin="0,10,0,0" />
+
+                <!-- Mensaje de Error (Oculto por defecto) -->
+                <Frame x:Name="FrameError"
+                       BackgroundColor="#FEE2E2"
+                       BorderColor="#FCA5A5"
+                       CornerRadius="8"
+                       Padding="10"
+                       IsVisible="False">
+                    <Label x:Name="LblError"
+                           Text="Usuario o contraseña incorrectos"
+                           TextColor="#991B1B"
+                           FontSize="13"
+                           HorizontalOptions="Center"/>
+                </Frame>
+
+                <!-- Campo de Usuario -->
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Usuario" 
+                           FontSize="13" 
+                           FontAttributes="Bold" 
+                           TextColor="#475569" />
+
+                    <Border Stroke="#CBD5E1" 
+                            StrokeShape="RoundRectangle 10" 
+                            StrokeThickness="1"
+                            Padding="12,0">
+                        <Entry x:Name="TxtUsuario"
+                               Placeholder="Ej. andrea"
+                               PlaceholderColor="#94A3B8"
+                               TextColor="#1E293B"
+                               HeightRequest="45"
+                               ClearButtonVisibility="WhileEditing" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Campo de Contraseña -->
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Contraseña" 
+                           FontSize="13" 
+                           FontAttributes="Bold" 
+                           TextColor="#475569" />
+
+                    <Border Stroke="#CBD5E1" 
+                            StrokeShape="RoundRectangle 10" 
+                            StrokeThickness="1"
+                            Padding="12,0">
+                        <Entry x:Name="TxtPassword"
+                               IsPassword="True"
+                               Placeholder="••••••••"
+                               PlaceholderColor="#94A3B8"
+                               TextColor="#1E293B"
+                               HeightRequest="45" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Botón de Ingreso -->
+                <Button x:Name="BtnIngresar"
+                        Text="Ingresar al Sistema"
+                        BackgroundColor="#2563EB"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="10"
+                        HeightRequest="48"
+                        Margin="0,15,0,0"
+                        Clicked="OnIngresarClicked" />
+
+                <!-- Indicador de Carga -->
+                <ActivityIndicator x:Name="IndicadorCarga"
+                                   IsRunning="False"
+                                   IsVisible="False"
+                                   Color="#2563EB"
+                                   HorizontalOptions="Center" />
+
+                <!-- Pie de página informativo -->
+                <Label Text="Si no recuerda sus credenciales, contacte al Administrador." 
+                       FontSize="11" 
+                       TextColor="#94A3B8" 
+                       HorizontalTextAlignment="Center" 
+                       Margin="0,10,0,0" />
+
+            </VerticalStackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>
