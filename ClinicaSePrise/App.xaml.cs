@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ClinicaSePrise.Vistas;
 
 namespace ClinicaSePrise
 {

@@ -86,4 +86,10 @@
 	  </MauiXaml>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Entidades\" />
+	  <Folder Include="Datos\" />
+	  <Folder Include="Vistas\" />
+	</ItemGroup>
+
 </Project>

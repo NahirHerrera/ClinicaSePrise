@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ClinicaSePrise.Models;
+namespace ClinicaSePrise.Entidades;
 
 using System.Globalization;
 

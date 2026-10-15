@@ -1,14 +1,46 @@
-﻿using ClinicaSePrise.Models;
+﻿using ClinicaSePrise.Entidades;
 using MySqlConnector;
 
-namespace ClinicaSePrise.Services;
+namespace ClinicaSePrise.Datos;
 
-public class DashboardService
+public class Conexion
 {
     const string Cadena = "Server=localhost;Database=ClinicaSePrise;User=root;Password=1234;";
 
     static int Contar(MySqlConnection cn, string sql) =>
         Convert.ToInt32(new MySqlCommand(sql, cn).ExecuteScalar());
+
+    // NUEVO MÉTODO PARA VALIDAR EL LOGIN Y RETORNAR EL ROL Y VÍNCULOS
+    public UsuarioDto ValidarLogin(string usuario, string password)
+    {
+        using var cn = new MySqlConnection(Cadena);
+        cn.Open();
+
+        string query = @"SELECT u.idUsuario, u.usuario, r.nombre AS rol, u.idRol, u.idPaciente, u.idProfesional 
+                         FROM Usuario u 
+                         JOIN Rol r ON u.idRol = r.idRol 
+                         WHERE u.usuario = @u AND u.contrasenia = @p";
+
+        using var cmd = new MySqlCommand(query, cn);
+        cmd.Parameters.AddWithValue("@u", usuario);
+        cmd.Parameters.AddWithValue("@p", password);
+
+        using var rd = cmd.ExecuteReader();
+        if (rd.Read())
+        {
+            return new UsuarioDto
+            {
+                IdUsuario = rd.GetInt32("idUsuario"),
+                Usuario = rd.GetString("usuario"),
+                Rol = rd.GetString("rol"),
+                IdRol = rd.GetInt32("idRol"),
+                IdPaciente = rd.IsDBNull(rd.GetOrdinal("idPaciente")) ? (int?)null : rd.GetInt32("idPaciente"),
+                IdProfesional = rd.IsDBNull(rd.GetOrdinal("idProfesional")) ? (int?)null : rd.GetInt32("idProfesional")
+            };
+        }
+
+        return null; // Si no coincide el usuario o contraseña
+    }
 
     public Dashboard Obtener(string usuario)
     {
@@ -61,4 +93,15 @@ public class DashboardService
 
         return d;
     }
+}
+
+// Clase auxiliar de transferencia de datos para el usuario logueado
+public class UsuarioDto
+{
+    public int IdUsuario { get; set; }
+    public string Usuario { get; set; }
+    public string Rol { get; set; }
+    public int IdRol { get; set; }
+    public int? IdPaciente { get; set; }
+    public int? IdProfesional { get; set; }
 }
