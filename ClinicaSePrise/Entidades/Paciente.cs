@@ -17,7 +17,8 @@ namespace ClinicaSePrise.Entidades
         public string nroAfiliado { get; set; }
         public string nroHistoriaClinica { get; set; }
 
-        public Paciente(int idPaciente, string nombre, string apellido, string dni, string telefono, string email, string modalidadCobertura, string obraSocial, string nroAfiliado, string nroHistoriaClinica)
+        public Paciente(int idPaciente, string nombre, string apellido, string dni, string telefono,
+                        string email, string modalidadCobertura, string obraSocial, string nroAfiliado, string nroHistoriaClinica)
         {
             this.idPaciente = idPaciente;
             this.nombre = nombre;
