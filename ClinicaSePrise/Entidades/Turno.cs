@@ -17,7 +17,9 @@ namespace ClinicaSePrise.Entidades
         public int? duracion { get; set; }
         public string modalidadSolicitud { get; set; }
         public string estado { get; set; }
-
+        public string nombrePaciente { get; set; }
+        public string dniPaciente { get; set; }
+        public string nombreProfesional { get; set; }
         public Turno(int idTurno, int? idPaciente, int? idProfesional, string especialidad, DateTime? fechaHora,
                     string tipoTurno, int? duracion, string modalidadSolicitud, string estado)
         {

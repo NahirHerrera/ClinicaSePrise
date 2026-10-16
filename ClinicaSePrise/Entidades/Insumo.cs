@@ -12,7 +12,7 @@ namespace ClinicaSePrise.Entidades
         public int? stock { get; set; }
         public int stockMinimo { get; set; }
         public string estadoReposicion { get; set; }
-
+        public string sector { get; set; }
         public Insumo(int idInsumo, string nombre, int? idEstudio, int? stock, int stockMinimo, string estadoReposicion)
         {
             this.idInsumo = idInsumo;
