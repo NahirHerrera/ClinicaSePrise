@@ -53,7 +53,7 @@ CREATE TABLE RolPantalla (
 CREATE TABLE Usuario (
     idUsuario INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     usuario VARCHAR(50) UNIQUE NOT NULL,
-    contrasenia VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     idRol INT NOT NULL,
     idPaciente INT NULL,
     idProfesional INT NULL,
@@ -193,6 +193,27 @@ CREATE TABLE Factura (
     FOREIGN KEY (idTurno) REFERENCES Turno(idTurno),
     FOREIGN KEY (idTurnoEstudio) REFERENCES TurnoEstudio(idTurno)
 );
+
+
+-- =====================================================
+--  PROCEDIMINETOS
+-- =====================================================
+
+DELIMITER //
+CREATE PROCEDURE IngresoLogin(
+    IN p_Usu VARCHAR(50),
+    IN p_Pass VARCHAR(255)
+)
+BEGIN
+    SELECT *
+    FROM Usuario
+    WHERE Usuario = p_Usu
+      AND Password = p_Pass
+    LIMIT 1;
+END //
+DELIMITER ;
+
+DESCRIBE Usuario;
 
 
 -- =====================================================
@@ -394,3 +415,6 @@ SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
+
+SELECT *
+FROM Usuario;

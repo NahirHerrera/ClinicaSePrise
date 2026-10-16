@@ -1,6 +1,6 @@
 using ClinicaSePrise.Datos;
 using ClinicaSePrise.Entidades;
-using MySqlConnector;
+using System.Data;
 
 namespace ClinicaSePrise.Vistas;
 
@@ -10,7 +10,6 @@ public partial class LoginPage : ContentPage
     {
         InitializeComponent();
     }
-
     private async void OnIngresarClicked(object sender, EventArgs e)
     {
         string usuario = TxtUsuario.Text?.Trim();
@@ -32,10 +31,21 @@ public partial class LoginPage : ContentPage
         try
         {
             // 2. Llamamos al método que agregamos en tu clase Conexion
-            Conexion db = new Conexion();
-            var datosUsuario = await Task.Run(() => db.ValidarLogin(usuario, password));
+            using var cn = Conexion.getInstancia().CrearConexion();
+            await cn.OpenAsync();
 
-            if (datosUsuario != null)
+            using var cmd = cn.CreateCommand();
+            cmd.CommandText = "IngresoLogin";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("p_Usu", usuario);
+            cmd.Parameters.AddWithValue("p_Pass", password);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            bool datosUsuario = await reader.ReadAsync();
+
+            if (datosUsuario)
             {
                 // TODO: restaurar SesionActual y el switch cuando existan las vistas
                 Page paginaDestino = new HomePage(new Dashboard());
