@@ -18,5 +18,15 @@ namespace ClinicaSePrise.Vistas
             {
                 // Lógica para el botón de nuevo turno
             }
+
+            private async void OnCerrarSesion(object? sender, EventArgs e)
+            {
+                bool confirmar = await DisplayAlertAsync("Cerrar sesión", "¿Querés cerrar la sesión?", "Sí", "No");
+                if (!confirmar)
+                    return;
+
+                // Volvemos al login; los datos de conexión a MySQL quedan guardados en Conexion
+                Window.Page = new NavigationPage(new LoginPage());
+            }
         }
     }

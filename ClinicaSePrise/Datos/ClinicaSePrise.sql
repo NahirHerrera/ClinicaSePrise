@@ -260,7 +260,7 @@ BEGIN
     SELECT *
     FROM Usuario
     WHERE Usuario = p_Usu
-      AND Password = p_Pass
+      AND Password = SHA2(p_Pass,256)
     LIMIT 1;
 END //
 DELIMITER ;
