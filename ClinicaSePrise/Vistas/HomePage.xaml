@@ -25,6 +25,7 @@
 
         <!-- SIDEBAR -->
         <Border Grid.Column="0" BackgroundColor="White" Stroke="{StaticResource Borde}" Padding="16">
+            <Grid RowDefinitions="*,Auto">
             <VerticalStackLayout Spacing="4">
                 <Label Text="Clínica SePrise" FontSize="20" FontAttributes="Bold" />
                 <Label Text="Gestión médica" TextColor="{StaticResource Gris}" Margin="0,0,0,24" />
@@ -52,6 +53,12 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
             </VerticalStackLayout>
+
+            <!-- Cerrar sesión: vuelve al login para entrar con otro usuario -->
+            <Button Grid.Row="1" Text="Cerrar sesión" BackgroundColor="White"
+                    TextColor="Red" BorderColor="{StaticResource Borde}" BorderWidth="1"
+                    CornerRadius="10" HeightRequest="44" Clicked="OnCerrarSesion" />
+            </Grid>
         </Border>
 
         <!-- CONTENIDO -->
