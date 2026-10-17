@@ -390,14 +390,14 @@ INSERT INTO RolPantalla (idRol, pantalla) VALUES
 (7, 'Dashboard'), (7, 'Estudios'), (7, 'Insumos'), (7, 'Comprobantes');
 
 -- Usuarios (contraseña en texto simple solo para pruebas; en la app real va con hash)
-INSERT INTO Usuario (usuario, contrasenia, idRol, idPaciente, idProfesional) VALUES
-('juan', '1234', 1, 1, NULL),
-('recepcion', '1234', 2, NULL, NULL),
-('mgomez', '1234', 3, NULL, 1),
-('andrea', '1234', 4, NULL, NULL),
-('guardia', '1234', 5, NULL, NULL),
-('laboratorio', '1234', 6, NULL, NULL),
-('asistencial', '1234', 7, NULL, NULL);
+INSERT INTO Usuario (usuario, password, idRol, idPaciente, idProfesional) VALUES
+('jperez', SHA2('1234',256), 1, 1, NULL),
+('recepcion', SHA2('1234',256), 2, NULL, NULL),
+('mgomez', SHA2('1234',256), 3, NULL, 1),
+('agarcia', SHA2('1234',256), 4, NULL, NULL),
+('guardia', SHA2('1234',256), 5, NULL, NULL),
+('laboratorio', SHA2('1234',256), 6, NULL, NULL),
+('asistencial', SHA2('1234',256), 7, NULL, NULL);
 
 -- Turnos de consultorio
 INSERT INTO Turno (idTurno, idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado) VALUES
@@ -520,7 +520,7 @@ JOIN Estudio e ON c.idEstudio = e.idEstudio;
 SELECT u.idUsuario, u.usuario, r.nombre AS rol, u.idRol
 FROM Usuario u
 JOIN Rol r ON u.idRol = r.idRol
-WHERE u.usuario = 'andrea' AND u.contrasenia = '1234';
+WHERE u.usuario = 'andrea' AND u.password = SHA2('1234',256);
 
 -- Pantallas del menú según el rol (Administracion = 4)
 SELECT pantalla FROM RolPantalla WHERE idRol = 4;
@@ -551,5 +551,3 @@ FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
 
-SELECT *
-FROM Usuario;

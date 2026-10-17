@@ -60,7 +60,7 @@ public partial class LoginPage : ContentPage
         }
         catch (Exception ex)
         {
-            MostrarError("Error al conectar con la base de datos.");
+            await DisplayAlert("Error", ex.ToString(), "OK");
         }
         finally
         {

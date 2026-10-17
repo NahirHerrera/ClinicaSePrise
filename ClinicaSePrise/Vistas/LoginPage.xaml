@@ -74,7 +74,7 @@
                                 StrokeThickness="1"
                                 Padding="12,0">
                         <Entry x:Name="TxtUsuario"
-                                   Placeholder="Ej. Juan Perez"
+                                   Placeholder="Ej. jperez"
                                    PlaceholderColor="#94A3B8"
                                    TextColor="#1E293B"
                                    HeightRequest="42"
