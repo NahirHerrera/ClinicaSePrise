@@ -199,6 +199,58 @@ CREATE TABLE Factura (
 --  PROCEDIMINETOS
 -- =====================================================
 
+
+-- CREAR USUARIO
+
+DELIMITER //
+CREATE PROCEDURE CrearUsuario(
+  IN p_usuario VARCHAR(50),
+  IN p_password VARCHAR(255),
+  IN p_idRol INT,
+  IN p_idPaciente INT,
+  IN p_idProfesional INT
+)
+crear: BEGIN
+  IF EXISTS(SELECT 1 FROM Usuario WHERE usuario = p_usuario) THEN
+    SELECT 'Error: usuario ya existe' AS resultado;
+    LEAVE crear;
+  END IF;
+
+  IF NOT EXISTS(SELECT 1 FROM Rol WHERE idRol = p_idRol) THEN
+    SELECT 'Error: rol no existe' AS resultado;
+    LEAVE crear;
+  END IF;
+
+  IF p_idPaciente IS NOT NULL THEN
+    IF NOT EXISTS(SELECT 1 FROM Paciente WHERE idPaciente = p_idPaciente) THEN
+      SELECT 'Error: paciente no existe' AS resultado;
+      LEAVE crear;
+    END IF;
+    IF EXISTS(SELECT 1 FROM Usuario WHERE idPaciente = p_idPaciente) THEN
+      SELECT 'Error: paciente ya vinculado a otro usuario' AS resultado;
+      LEAVE crear;
+    END IF;
+  END IF;
+
+  IF p_idProfesional IS NOT NULL THEN
+    IF NOT EXISTS(SELECT 1 FROM Profesional WHERE idProfesional = p_idProfesional) THEN
+      SELECT 'Error: profesional no existe' AS resultado;
+      LEAVE crear;
+    END IF;
+    IF EXISTS(SELECT 1 FROM Usuario WHERE idProfesional = p_idProfesional) THEN
+      SELECT 'Error: profesional ya vinculado a otro usuario' AS resultado;
+      LEAVE crear;
+    END IF;
+  END IF;
+
+  INSERT INTO Usuario(usuario, password, idRol, idPaciente, idProfesional)
+  VALUES (p_usuario, SHA2(p_password,256), p_idRol, p_idPaciente, p_idProfesional);
+END crear //
+DELIMITER ;
+
+
+-- LOGIN
+
 DELIMITER //
 CREATE PROCEDURE IngresoLogin(
     IN p_Usu VARCHAR(50),
@@ -213,7 +265,90 @@ BEGIN
 END //
 DELIMITER ;
 
-DESCRIBE Usuario;
+
+-- AGREGAR PACIENTE
+
+DELIMITER //
+CREATE PROCEDURE agregarPaciente(
+    IN p_nombre VARCHAR(100),
+    IN p_apellido VARCHAR(100),
+    IN p_dni VARCHAR(20),
+    IN p_telefono VARCHAR(20),
+    IN p_email VARCHAR(255)
+)
+BEGIN
+    INSERT INTO Paciente(nombre, apellido, dni, telefono, email)
+    VALUES (p_nombre, p_apellido, p_dni, p_telefono, p_email);
+END //
+DELIMITER ;
+
+
+-- ACTUALIZAR PACIENTE
+
+DELIMITER //
+CREATE PROCEDURE ActualizarPaciente(
+    IN p_idPaciente INT,
+    IN p_nombre VARCHAR(100),
+    IN p_apellido VARCHAR(100),
+    IN p_telefono VARCHAR(20),
+    IN p_email VARCHAR(255)
+)
+BEGIN
+    UPDATE Paciente
+    SET nombre = p_nombre,
+        apellido = p_apellido,
+        telefono = p_telefono,
+        email = p_email
+    WHERE idPaciente = p_idPaciente;
+END //
+DELIMITER ;
+
+-- AGENDAR TIRNO
+
+DELIMITER //
+CREATE PROCEDURE AgendarTurno(
+  IN p_idPaciente INT,
+  IN p_idProfesional INT,
+  IN p_especialidad VARCHAR(100),
+  IN p_fechaHora DATETIME,
+  IN p_duracion INT
+)
+agenda: BEGIN
+
+
+  IF NOT EXISTS (SELECT 1 FROM Paciente WHERE idPaciente = p_idPaciente) THEN
+    SELECT 'Error: paciente no existe' AS mensaje;
+    LEAVE agenda;
+  END IF;
+
+
+  IF NOT EXISTS (SELECT 1 FROM Profesional WHERE idProfesional = p_idProfesional) THEN
+    SELECT 'Error: profesional no existe' AS mensaje;
+    LEAVE agenda;
+  END IF;
+
+
+  IF EXISTS (
+    SELECT 1 FROM Turno t
+    WHERE t.idProfesional = p_idProfesional
+      AND t.estado <> 'Cancelado'
+      AND t.fechaHora < DATE_ADD(p_fechaHora, INTERVAL COALESCE(p_duracion,30) MINUTE)
+      AND DATE_ADD(t.fechaHora, INTERVAL t.duracion MINUTE) > p_fechaHora
+  ) THEN
+    SELECT 'Error: profesional con turno solapado' AS mensaje;
+    LEAVE agenda;
+  END IF;
+
+
+  INSERT INTO Turno (idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado)
+  VALUES (p_idPaciente, p_idProfesional, p_especialidad, p_fechaHora, 'Presencial', COALESCE(p_duracion,30), 'Web', 'Pendiente');
+
+
+END agenda //
+DELIMITER ;
+
+
+
 
 
 -- =====================================================
