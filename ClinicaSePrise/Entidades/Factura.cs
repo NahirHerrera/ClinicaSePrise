@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using System;
-
-namespace ClinicaSePrise.Entidades
+﻿namespace ClinicaSePrise.Entidades
 {
     public class Factura
     {
@@ -19,6 +13,9 @@ namespace ClinicaSePrise.Entidades
         public string medioPago { get; set; }
         public string estado { get; set; }
 
+        public string detalle => $"{fechaEmision:dd/MM/yyyy} · {medioPago}";
+        public string montoTxt => $"$ {monto:N2}";
+
         public Factura(int idFactura, string nroComprobante, int idPaciente, int idTurno, int idTurnoEstudio,
                        DateTime fechaEmision, string concepto, decimal monto, string medioPago, string estado)
         {
@@ -27,6 +24,16 @@ namespace ClinicaSePrise.Entidades
             this.idPaciente = idPaciente;
             this.idTurno = idTurno;
             this.idTurnoEstudio = idTurnoEstudio;
+            this.fechaEmision = fechaEmision;
+            this.concepto = concepto;
+            this.monto = monto;
+            this.medioPago = medioPago;
+            this.estado = estado;
+        }
+
+        public Factura(string nroComprobante, DateTime fechaEmision, string concepto, decimal monto, string medioPago, string estado)
+        {
+            this.nroComprobante = nroComprobante;
             this.fechaEmision = fechaEmision;
             this.concepto = concepto;
             this.monto = monto;

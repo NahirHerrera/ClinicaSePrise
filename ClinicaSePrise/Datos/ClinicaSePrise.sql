@@ -202,7 +202,6 @@ CREATE TABLE Factura (
 --  PROCEDIMINETOS
 -- =====================================================
 
-
 -- CREAR USUARIO
 
 DELIMITER //
@@ -251,6 +250,46 @@ crear: BEGIN
 END crear //
 DELIMITER ;
 
+-- REGISTRAR PACIENTE EN APP
+
+DELIMITER //
+CREATE PROCEDURE RegistrarPaciente(
+  IN p_nombre VARCHAR(100),
+  IN p_apellido VARCHAR(100),
+  IN p_dni VARCHAR(20),
+  IN p_telefono VARCHAR(20),
+  IN p_email VARCHAR(255),
+  IN p_usuario VARCHAR(50),
+  IN p_password VARCHAR(255)
+)
+reg: BEGIN
+  DECLARE v_id INT;
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    SELECT 'Error: no se pudo registrar' AS mensaje;
+  END;
+
+  IF EXISTS (SELECT 1 FROM Paciente WHERE dni = p_dni) THEN
+    SELECT 'Error: ya existe un paciente con ese DNI' AS mensaje;
+    LEAVE reg;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM Usuario WHERE usuario = p_usuario) THEN
+    SELECT 'Error: ese usuario ya existe' AS mensaje;
+    LEAVE reg;
+  END IF;
+
+  START TRANSACTION;
+  INSERT INTO Paciente (nombre, apellido, dni, telefono, email)
+  VALUES (p_nombre, p_apellido, p_dni, p_telefono, p_email);
+  SET v_id = LAST_INSERT_ID();
+
+  INSERT INTO Usuario (usuario, password, idRol, idPaciente)
+  VALUES (p_usuario, SHA2(p_password, 256), 1, v_id);
+  COMMIT;
+END reg //
+DELIMITER ;
 
 -- LOGIN
 
@@ -268,7 +307,6 @@ BEGIN
 END //
 DELIMITER ;
 
-
 -- AGREGAR PACIENTE
 
 DELIMITER //
@@ -284,7 +322,6 @@ BEGIN
     VALUES (p_nombre, p_apellido, p_dni, p_telefono, p_email);
 END //
 DELIMITER ;
-
 
 -- ACTUALIZAR PACIENTE
 
@@ -356,23 +393,81 @@ DELIMITER //
 CREATE PROCEDURE TurnosDisponibles(IN p_idProfesional INT, IN p_fecha DATE)
 BEGIN
   WITH RECURSIVE slots AS (
-    SELECT TIMESTAMP(p_fecha, a.horaDesde) AS inicio, a.duracionMinima AS dur, TIMESTAMP(p_fecha, a.horaHasta) AS fin
+    SELECT TIMESTAMP(p_fecha, a.horaDesde) AS inicio, a.duracionMinima AS dur,
+           TIMESTAMP(p_fecha, a.horaHasta) AS fin, a.sobreturnosPermitidos AS sob
     FROM Agenda a
     WHERE a.idProfesional = p_idProfesional AND a.diaSemana = WEEKDAY(p_fecha) + 1
     UNION ALL
-    SELECT DATE_ADD(inicio, INTERVAL dur MINUTE), dur, fin FROM slots
+    SELECT DATE_ADD(inicio, INTERVAL dur MINUTE), dur, fin, sob FROM slots
     WHERE DATE_ADD(inicio, INTERVAL 2 * dur MINUTE) <= fin
+  ),
+  libres AS (
+    SELECT s.inicio, s.dur FROM slots s
+    WHERE s.inicio > NOW()
+      AND NOT EXISTS (
+        SELECT 1 FROM Turno t
+        WHERE t.idProfesional = p_idProfesional AND t.estado <> 'Cancelado'
+          AND t.fechaHora < DATE_ADD(s.inicio, INTERVAL s.dur MINUTE)
+          AND DATE_ADD(t.fechaHora, INTERVAL t.duracion MINUTE) > s.inicio)
+  ),
+  horas AS (
+    SELECT HOUR(inicio) AS h, MIN(inicio) AS primero, MIN(dur) AS dur, MIN(sob) AS sob
+    FROM slots GROUP BY HOUR(inicio)
   )
-  SELECT s.inicio AS fechaHora, s.dur AS duracion
-  FROM slots s
-  WHERE s.inicio > NOW()
-    AND NOT EXISTS (
-      SELECT 1 FROM Turno t
-      WHERE t.idProfesional = p_idProfesional AND t.estado <> 'Cancelado'
-        AND t.fechaHora < DATE_ADD(s.inicio, INTERVAL s.dur MINUTE)
-        AND DATE_ADD(t.fechaHora, INTERVAL t.duracion MINUTE) > s.inicio)
-  ORDER BY s.inicio;
+  SELECT l.inicio AS fechaHora, l.dur AS duracion, 'Normal' AS tipo FROM libres l
+  UNION ALL
+  SELECT h.primero, h.dur, 'Sobreturno' FROM horas h
+  WHERE h.primero > NOW()
+    AND NOT EXISTS (SELECT 1 FROM libres l WHERE HOUR(l.inicio) = h.h)
+    AND (SELECT COUNT(*) FROM Turno t
+         WHERE t.idProfesional = p_idProfesional AND t.estado <> 'Cancelado' AND t.tipoTurno = 'Sobreturno'
+           AND DATE(t.fechaHora) = p_fecha AND HOUR(t.fechaHora) = h.h) < h.sob
+  ORDER BY fechaHora;
 END //
+DELIMITER ;
+
+-- AGENDAR SOBRETURNO
+
+DELIMITER //
+CREATE PROCEDURE AgendarSobreturno(
+  IN p_idPaciente INT,
+  IN p_idProfesional INT,
+  IN p_especialidad VARCHAR(100),
+  IN p_fechaHora DATETIME,
+  IN p_duracion INT
+)
+sobre: BEGIN
+  DECLARE v_max INT DEFAULT 0;
+  DECLARE v_cant INT DEFAULT 0;
+
+  IF NOT EXISTS (SELECT 1 FROM Paciente WHERE idPaciente = p_idPaciente) THEN
+    SELECT 'Error: paciente no existe' AS mensaje;
+    LEAVE sobre;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Profesional WHERE idProfesional = p_idProfesional) THEN
+    SELECT 'Error: profesional no existe' AS mensaje;
+    LEAVE sobre;
+  END IF;
+
+  SELECT COALESCE(MAX(sobreturnosPermitidos), 0) INTO v_max
+  FROM Agenda
+  WHERE idProfesional = p_idProfesional AND diaSemana = WEEKDAY(p_fechaHora) + 1;
+
+  SELECT COUNT(*) INTO v_cant
+  FROM Turno
+  WHERE idProfesional = p_idProfesional AND estado <> 'Cancelado' AND tipoTurno = 'Sobreturno'
+    AND DATE(fechaHora) = DATE(p_fechaHora) AND HOUR(fechaHora) = HOUR(p_fechaHora);
+
+  IF v_cant >= v_max THEN
+    SELECT 'Error: no hay sobreturnos disponibles en esa hora' AS mensaje;
+    LEAVE sobre;
+  END IF;
+
+  INSERT INTO Turno (idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado)
+  VALUES (p_idPaciente, p_idProfesional, p_especialidad, p_fechaHora, 'Sobreturno', COALESCE(p_duracion, 30), 'App', 'Pendiente');
+END sobre //
+DELIMITER ;
 
 -- TURNOS DEL PACIENTE
 
@@ -466,7 +561,7 @@ INSERT INTO Rol (idRol, nombre) VALUES
 (2, 'Recepcion'),
 (3, 'Medico'),
 (4, 'Administracion'),
-(5, 'Guardia/Internacion'),
+(5, 'Guardia_Internacion'),
 (6, 'Laboratorio'),
 (7, 'Asistencial');
 
@@ -486,7 +581,7 @@ INSERT INTO Usuario (usuario, password, idRol, idPaciente, idProfesional) VALUES
 ('recepcion', SHA2('1234',256), 2, NULL, NULL),
 ('mgomez', SHA2('1234',256), 3, NULL, 1),
 ('agarcia', SHA2('1234',256), 4, NULL, NULL),
-('guardia', SHA2('1234',256), 5, NULL, NULL),
+('guardia_internacion', SHA2('1234',256), 5, NULL, NULL),
 ('laboratorio', SHA2('1234',256), 6, NULL, NULL),
 ('asistencial', SHA2('1234',256), 7, NULL, NULL);
 
@@ -525,6 +620,26 @@ INSERT INTO Agenda (idAgenda, idProfesional, especialidad, disponibilidad, diaSe
 (3, 3, 'Dermatología', 'Miércoles 15-18', 3, '15:00', '18:00', 25, 2, 0),
 (4, 4, 'Neurología', 'Jueves 9-12', 4, '09:00', '12:00', 40, 1, 1),
 (5, 5, 'Traumatología', 'Viernes 8-11', 5, '08:00', '11:00', 35, 2, 0);
+
+-- Profesionales y agendas de Fisioterapia, Kinesiología, Psicología y Psiquiatría
+INSERT INTO Profesional (idProfesional, nombre, apellido, nroMatricula, especialidad, consultorioAsignado) VALUES
+(6, 'Camila', 'Rojas', 'MAT-006', 'Fisioterapia', 'Consultorio 6'),
+(7, 'Diego', 'Herrera', 'MAT-007', 'Kinesiología', 'Consultorio 7'),
+(8, 'Valeria', 'Núñez', 'MAT-008', 'Psicología', 'Consultorio 8'),
+(9, 'Andrés', 'Molina', 'MAT-009', 'Psiquiatría', 'Consultorio 9');
+
+INSERT INTO Agenda (idAgenda, idProfesional, especialidad, disponibilidad, diaSemana, horaDesde, horaHasta, duracionMinima, sobreturnosPermitidos, recordatorio) VALUES
+(6, 6, 'Fisioterapia', 'Lunes 14-18', 1, '14:00', '18:00', 30, 1, 1),
+(7, 7, 'Kinesiología', 'Martes 8-12', 2, '08:00', '12:00', 30, 1, 1),
+(8, 8, 'Psicología', 'Miércoles 9-13', 3, '09:00', '13:00', 45, 1, 1),
+(9, 9, 'Psiquiatría', 'Jueves 14-18', 4, '14:00', '18:00', 30, 1, 1);
+
+-- Regla: duración mínima de 30 minutos
+UPDATE Agenda SET duracionMinima = 30 WHERE idAgenda IN (2, 3);
+ALTER TABLE Agenda ADD CONSTRAINT chk_duracion_minima CHECK (duracionMinima >= 30);
+
+-- Regla: 1 sobreturno por hora
+UPDATE Agenda SET sobreturnosPermitidos = 1 WHERE idAgenda > 0;
 
 INSERT INTO Atencion (idAtencion, idPaciente, idProfesional, fechaHoraFin, indicacionNuevoTurno) VALUES
 (1, 1, 1, '2026-10-10 09:45:00', 1),
@@ -641,4 +756,3 @@ SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
-

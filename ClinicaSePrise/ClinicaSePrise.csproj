@@ -126,6 +126,9 @@
 	  <MauiXaml Update="Vistas\RecepcionPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Vistas\RegistroPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 	<ItemGroup>

@@ -123,4 +123,6 @@ public partial class LoginPage : ContentPage
         LblError.Text = mensaje;
         FrameError.IsVisible = true;
     }
+
+    void OnCrearCuentaTapped(object sender, TappedEventArgs e) => Window.Page = new RegistroPage();
 }
