@@ -62,7 +62,7 @@
         </Border>
 
         <!-- CONTENIDO -->
-        <ScrollView Grid.Column="1">
+        <ScrollView x:Name="VistaStaff" Grid.Column="1">
             <VerticalStackLayout Padding="40,30" Spacing="24">
 
                 <!-- Barra superior -->
@@ -174,5 +174,6 @@
                 </Grid>
             </VerticalStackLayout>
         </ScrollView>
+        <ContentView x:Name="VistaPaciente" Grid.Column="1" Margin="40,30" IsVisible="False" />
     </Grid>
 </ContentPage>

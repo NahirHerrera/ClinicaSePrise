@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.Vistas.MedicoPage"
+             Title="Consultorio Médico"
+             BackgroundColor="#F8FAFC">
+
+    <Grid ColumnDefinitions="300,*" Padding="20" ColumnSpacing="20">
+        <!-- Lista de Pacientes citados hoy -->
+        <Frame Grid.Column="0" Padding="10" CornerRadius="10">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Pacientes de Hoy" FontSize="18" FontAttributes="Bold"/>
+                <CollectionView x:Name="cvPacientesHoy">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,2" Padding="8" BorderColor="#CBD5E1">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding NombrePaciente}" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Estado}" TextColor="#2563EB" FontSize="12"/>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Registro de Atención e Historia Clínica -->
+        <Frame Grid.Column="1" Padding="15" CornerRadius="10">
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Atención Médica - Historia Clínica" FontSize="20" FontAttributes="Bold" TextColor="#0F172A"/>
+                <Editor Placeholder="Escriba aquí la evolución clínica, síntomas, diagnóstico..." HeightRequest="120"/>
+                <Editor Placeholder="Indicaciones médicas / Recetario / Estudios solicitados..." HeightRequest="100"/>
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <CheckBox x:Name="chkNuevoTurno"/>
+                    <Label Text="Indica nuevo turno de control" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+                <Button Text="Finalizar Consulta y Guardar Atención" BackgroundColor="#2563EB" TextColor="White" Clicked="OnFinalizarConsultaClicked"/>
+            </VerticalStackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>

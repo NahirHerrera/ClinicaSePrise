@@ -85,6 +85,9 @@ CREATE TABLE Agenda (
     idProfesional INT,
     especialidad VARCHAR(100),
     disponibilidad VARCHAR(100),
+    diaSemana TINYINT,
+    horaDesde TIME,
+    horaHasta TIME,
     duracionMinima INT,
     sobreturnosPermitidos INT,
     recordatorio BOOLEAN,
@@ -303,7 +306,7 @@ BEGIN
 END //
 DELIMITER ;
 
--- AGENDAR TIRNO
+-- AGENDAR TURNO
 
 DELIMITER //
 CREATE PROCEDURE AgendarTurno(
@@ -341,15 +344,103 @@ agenda: BEGIN
 
 
   INSERT INTO Turno (idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado)
-  VALUES (p_idPaciente, p_idProfesional, p_especialidad, p_fechaHora, 'Presencial', COALESCE(p_duracion,30), 'Web', 'Pendiente');
+  VALUES (p_idPaciente, p_idProfesional, p_especialidad, p_fechaHora, 'Presencial', COALESCE(p_duracion,30), 'App', 'Pendiente');
 
 
 END agenda //
 DELIMITER ;
 
+-- VER TURNOS DISPONIBLES 
 
+DELIMITER //
+CREATE PROCEDURE TurnosDisponibles(IN p_idProfesional INT, IN p_fecha DATE)
+BEGIN
+  WITH RECURSIVE slots AS (
+    SELECT TIMESTAMP(p_fecha, a.horaDesde) AS inicio, a.duracionMinima AS dur, TIMESTAMP(p_fecha, a.horaHasta) AS fin
+    FROM Agenda a
+    WHERE a.idProfesional = p_idProfesional AND a.diaSemana = WEEKDAY(p_fecha) + 1
+    UNION ALL
+    SELECT DATE_ADD(inicio, INTERVAL dur MINUTE), dur, fin FROM slots
+    WHERE DATE_ADD(inicio, INTERVAL 2 * dur MINUTE) <= fin
+  )
+  SELECT s.inicio AS fechaHora, s.dur AS duracion
+  FROM slots s
+  WHERE s.inicio > NOW()
+    AND NOT EXISTS (
+      SELECT 1 FROM Turno t
+      WHERE t.idProfesional = p_idProfesional AND t.estado <> 'Cancelado'
+        AND t.fechaHora < DATE_ADD(s.inicio, INTERVAL s.dur MINUTE)
+        AND DATE_ADD(t.fechaHora, INTERVAL t.duracion MINUTE) > s.inicio)
+  ORDER BY s.inicio;
+END //
 
+-- TURNOS DEL PACIENTE
 
+DELIMITER //
+CREATE PROCEDURE MisTurnos(IN p_idPaciente INT)
+BEGIN
+  SELECT t.idTurno, t.idPaciente, t.idProfesional, t.especialidad, t.fechaHora,
+         t.tipoTurno, t.duracion, t.modalidadSolicitud, t.estado,
+         CONCAT(p.nombre,' ',p.apellido) AS nombreProfesional
+  FROM Turno t
+  JOIN Profesional p ON p.idProfesional = t.idProfesional
+  WHERE t.idPaciente = p_idPaciente
+  ORDER BY t.fechaHora DESC;
+END //
+DELIMITER ;
+
+-- CANCELAR TURNO
+
+DELIMITER //
+CREATE PROCEDURE CancelarTurno(IN p_idTurno INT, IN p_idPaciente INT)
+BEGIN
+  UPDATE Turno SET estado = 'Cancelado'
+  WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
+    AND estado IN ('Pendiente','Confirmado') AND fechaHora > NOW();
+  SELECT ROW_COUNT() AS cancelado;
+END //
+DELIMITER ;
+
+-- LISTADO DE ESPECIALIDADES
+
+DELIMITER //
+CREATE PROCEDURE ListarEspecialidades()
+BEGIN
+  SELECT DISTINCT especialidad FROM Profesional WHERE especialidad IS NOT NULL ORDER BY especialidad;
+END //
+
+-- LISTADO DE PROFESIONALES
+
+CREATE PROCEDURE ProfesionalesPorEspecialidad(IN p_especialidad VARCHAR(100))
+BEGIN
+  SELECT p.idProfesional,
+         CONCAT(p.nombre,' ',p.apellido,' (',COALESCE(GROUP_CONCAT(a.disponibilidad SEPARATOR ', '),'sin agenda'),')') AS nombre
+  FROM Profesional p
+  LEFT JOIN Agenda a ON a.idProfesional = p.idProfesional
+  WHERE p.especialidad = p_especialidad
+  GROUP BY p.idProfesional, p.nombre, p.apellido
+  ORDER BY p.apellido;
+END //
+
+-- FACTURAS DEL PACIENTE
+
+CREATE PROCEDURE MisFacturas(IN p_idPaciente INT)
+BEGIN
+  SELECT nroComprobante, fechaEmision, concepto, monto, medioPago, estado
+  FROM Factura WHERE idPaciente = p_idPaciente ORDER BY fechaEmision DESC;
+END //
+
+-- COMPROBANTES DEL PACIENTE
+
+CREATE PROCEDURE MisComprobantesEstudio(IN p_idPaciente INT)
+BEGIN
+  SELECT c.fechaAtencion, e.nombre, c.comprobanteRetiro
+  FROM Comprobante c
+  JOIN Estudio e ON e.idEstudio = c.idEstudio
+  WHERE c.idPaciente = p_idPaciente
+  ORDER BY c.fechaAtencion DESC;
+END //
+DELIMITER ;
 
 -- =====================================================
 --  DATOS DE PRUEBA
@@ -375,7 +466,7 @@ INSERT INTO Rol (idRol, nombre) VALUES
 (2, 'Recepcion'),
 (3, 'Medico'),
 (4, 'Administracion'),
-(5, 'Guardia'),
+(5, 'Guardia/Internacion'),
 (6, 'Laboratorio'),
 (7, 'Asistencial');
 
@@ -428,12 +519,12 @@ INSERT INTO TurnoEstudio (idTurno, idPaciente, idEstudio, fechaHora, modalidadSo
 (4, 4, 4, '2026-10-14 08:00:00', 'Sistema', 0),
 (5, 5, 5, '2026-10-15 15:00:00', 'App', 1);
 
-INSERT INTO Agenda (idAgenda, idProfesional, especialidad, disponibilidad, duracionMinima, sobreturnosPermitidos, recordatorio) VALUES
-(1, 1, 'Cardiología', 'Lunes 9-12', 30, 2, 1),
-(2, 2, 'Pediatría', 'Martes 10-14', 20, 1, 1),
-(3, 3, 'Dermatología', 'Miércoles 15-18', 25, 2, 0),
-(4, 4, 'Neurología', 'Jueves 9-12', 40, 1, 1),
-(5, 5, 'Traumatología', 'Viernes 8-11', 35, 2, 0);
+INSERT INTO Agenda (idAgenda, idProfesional, especialidad, disponibilidad, diaSemana, horaDesde, horaHasta, duracionMinima, sobreturnosPermitidos, recordatorio) VALUES
+(1, 1, 'Cardiología', 'Lunes 9-12', 1, '09:00', '12:00', 30, 2, 1),
+(2, 2, 'Pediatría', 'Martes 10-14', 2, '10:00', '14:00', 20, 1, 1),
+(3, 3, 'Dermatología', 'Miércoles 15-18', 3, '15:00', '18:00', 25, 2, 0),
+(4, 4, 'Neurología', 'Jueves 9-12', 4, '09:00', '12:00', 40, 1, 1),
+(5, 5, 'Traumatología', 'Viernes 8-11', 5, '08:00', '11:00', 35, 2, 0);
 
 INSERT INTO Atencion (idAtencion, idPaciente, idProfesional, fechaHoraFin, indicacionNuevoTurno) VALUES
 (1, 1, 1, '2026-10-10 09:45:00', 1),

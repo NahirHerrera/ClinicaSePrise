@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.Vistas.AdministracionPage"
+             Title="Panel de Administración"
+             BackgroundColor="#F8FAFC">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+
+            <!-- Liquidación de Honorarios a Médicos -->
+            <Frame Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="💰 Liquidación de Honorarios (Circuito A)" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
+                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="10">
+                        <Picker Grid.Column="0" Title="Seleccionar Médico" x:Name="pkMedicoHonorario"/>
+                        <Entry Grid.Column="1" Placeholder="Período (ej: Octubre 2026)"/>
+                        <Button Grid.Column="2" Text="Calcular Liquidación" BackgroundColor="#2563EB" TextColor="White"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Resumen General / Métricas -->
+            <Label Text="Control General de la Clínica" FontSize="18" FontAttributes="Bold"/>
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                <Frame Grid.Column="0" BackgroundColor="#EFF6FF" Padding="15">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="Total Atendidos" FontSize="14"/>
+                        <Label Text="124" FontSize="24" FontAttributes="Bold" TextColor="#2563EB"/>
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Grid.Column="1" BackgroundColor="#F0FDF4" Padding="15">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="Recaudación Hoy" FontSize="14"/>
+                        <Label Text="$450,000" FontSize="24" FontAttributes="Bold" TextColor="#16A34A"/>
+                    </VerticalStackLayout>
+                </Frame>
+                <Frame Grid.Column="2" BackgroundColor="#FEF2F2" Padding="15">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="Insumos Críticos" FontSize="14"/>
+                        <Label Text="3" FontSize="24" FontAttributes="Bold" TextColor="#DC2626"/>
+                    </VerticalStackLayout>
+                </Frame>
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

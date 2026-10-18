@@ -78,13 +78,52 @@
 	  <Compile Update="HomePage.xaml.cs">
 	    <DependentUpon>HomePage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Vistas\AdministracionPage.xaml.cs">
+	    <DependentUpon>AdministracionPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Vistas\AsistencialPage.xaml.cs">
+	    <DependentUpon>AsistencialPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Vistas\Guardia-InternacionPage.xaml.cs">
+	    <DependentUpon>Guardia-InternacionPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Vistas\LaboratorioPage.xaml.cs">
+	    <DependentUpon>LaboratorioPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Vistas\MedicoPage.xaml.cs">
+	    <DependentUpon>MedicoPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Vistas\RecepcionPage.xaml.cs">
+	    <DependentUpon>RecepcionPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="LoginPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Vistas\AdministracionPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Vistas\AsistencialPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Vistas\ConexionPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Vistas\Guardia-InternacionPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Vistas\LaboratorioPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Vistas\MedicoPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Vistas\PacientePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Vistas\RecepcionPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

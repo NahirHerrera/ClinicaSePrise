@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.Vistas.LaboratorioPage"
+             Title="Servicio de Laboratorio"
+             BackgroundColor="#F0FDF4">
+
+    <Grid ColumnDefinitions="*,*" Padding="20" ColumnSpacing="15">
+        <!-- Recepción y Carga de Resultados -->
+        <VerticalStackLayout Grid.Column="0" Spacing="15">
+            <Label Text="Atención e Ingreso de Resultados" FontSize="20" FontAttributes="Bold" TextColor="#166534"/>
+            <Entry Placeholder="Buscar Comprobante / Protocolo N°"/>
+            <Editor Placeholder="Cargar valores analíticos / observaciones..." HeightRequest="150"/>
+            <Button Text="Cargar y Finalizar Estudio" BackgroundColor="#16A34A" TextColor="White"/>
+        </VerticalStackLayout>
+
+        <!-- Stock Crítico de Insumos -->
+        <Frame Grid.Column="1" Padding="15" CornerRadius="10">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="🧪 Control de Insumos de Laboratorio" FontSize="18" FontAttributes="Bold"/>
+                <CollectionView x:Name="cvStockLaboratorio">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <HorizontalStackLayout Spacing="20" Padding="5">
+                                <Label Text="{Binding NombreInsumo}" VerticalOptions="Center"/>
+                                <Label Text="{Binding StockActual}" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Button Text="Reponer" BackgroundColor="#D97706" TextColor="White"/>
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>

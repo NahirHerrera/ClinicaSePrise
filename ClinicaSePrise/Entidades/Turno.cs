@@ -20,6 +20,8 @@ namespace ClinicaSePrise.Entidades
         public string nombrePaciente { get; set; }
         public string dniPaciente { get; set; }
         public string nombreProfesional { get; set; }
+        public string Fecha => fechaHora?.ToString("dd/MM/yyyy HH:mm") ?? "";
+        public bool PuedeCancelar => (estado == "Pendiente" || estado == "Confirmado") && fechaHora > DateTime.Now;
         public Turno(int idTurno, int? idPaciente, int? idProfesional, string especialidad, DateTime? fechaHora,
                     string tipoTurno, int? duracion, string modalidadSolicitud, string estado)
         {

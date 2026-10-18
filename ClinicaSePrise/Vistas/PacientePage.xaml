@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.Vistas.PacientePage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="🚪 Cerrar Sesión" 
+                     Clicked="OnCerrarSesionClicked" 
+                     Order="Primary" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Stroke" Value="#E8EBF0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style x:Key="Titulo" TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#0F172A" />
+        </Style>
+        <Style x:Key="Sub" TargetType="Label">
+            <Setter Property="TextColor" Value="#64748B" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="24" Padding="0,0,0,24">
+
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Mi panel" FontSize="26" FontAttributes="Bold" TextColor="#0F172A" />
+                <Label Text="Gestioná tus turnos y consultá tus comprobantes." Style="{StaticResource Sub}" />
+            </VerticalStackLayout>
+
+            <!-- Mis turnos -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Mis turnos" Style="{StaticResource Titulo}" />
+                    <VerticalStackLayout x:Name="ListaTurnos" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}" BackgroundColor="#F8FAFC" Padding="16">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding especialidad}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding nombreProfesional}" Style="{StaticResource Sub}" />
+                                            <Label Text="{Binding Fecha}" Style="{StaticResource Sub}" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="6" HorizontalOptions="End">
+                                            <Label Text="{Binding estado}" FontAttributes="Bold" TextColor="#2563EB" HorizontalOptions="End" />
+                                            <Button Text="Cancelar" Clicked="Cancelar_Clicked" IsVisible="{Binding PuedeCancelar}"
+                                                    BackgroundColor="White" TextColor="Red" BorderColor="#E8EBF0" BorderWidth="1" CornerRadius="12" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Label x:Name="SinTurnos" Text="No tenés turnos." Style="{StaticResource Sub}" IsVisible="False" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.Vistas.RecepcionPage"
+             Title="Recepción y Acreditación"
+             BackgroundColor="#F8FAFC">
+
+    <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
+        <VerticalStackLayout Grid.Row="0" Spacing="10">
+            <Label Text="Gestión de Recepción" FontSize="22" FontAttributes="Bold"/>
+            <SearchBar Placeholder="Buscar paciente por DNI o Nombre..." x:Name="sbPaciente" />
+        </VerticalStackLayout>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="15">
+            <!-- Columna Izquierda: Presentación y Acreditación -->
+            <Frame Grid.Column="0" CornerRadius="10" Padding="15" BorderColor="#E2E8F0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Acreditar y Cobrar" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
+                    <Entry Placeholder="Obra Social / Cobertura" x:Name="txtObraSocial"/>
+                    <Entry Placeholder="Monto $ / Copago" x:Name="txtMonto" Keyboard="Numeric"/>
+                    <Picker x:Name="pkMedioPago" Title="Seleccionar Medio de Pago">
+                        <Picker.Items>
+                            <x:String>Efectivo</x:String>
+                            <x:String>Tarjeta</x:String>
+                            <x:String>Transferencia</x:String>
+                        </Picker.Items>
+                    </Picker>
+                    <Button Text="Acreditar y Pasar a Sala" BackgroundColor="#16A34A" TextColor="White" Clicked="OnAcreditarClicked"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Columna Derecha: Sala de Espera Activa -->
+            <Frame Grid.Column="1" CornerRadius="10" Padding="15" BorderColor="#E2E8F0">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Pacientes en Sala de Espera" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
+                    <CollectionView x:Name="cvSalaEspera">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <HorizontalStackLayout Spacing="10" Padding="5">
+                                    <Label Text="{Binding NombrePaciente}" VerticalOptions="Center" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Especialidad}" VerticalOptions="Center" TextColor="#64748B"/>
+                                    <Button Text="Llamar" BackgroundColor="#2563EB" TextColor="White"/>
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </Grid>
+</ContentPage>
