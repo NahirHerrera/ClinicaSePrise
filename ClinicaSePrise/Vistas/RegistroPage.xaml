@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicaSePrise.Vistas.RegistroPage"
+             BackgroundColor="White">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="24" MaximumWidthRequest="480">
+            <Label Text="Crear cuenta" FontSize="26" FontAttributes="Bold" TextColor="#0F172A" />
+            <Label Text="Registrate como paciente para solicitar y gestionar tus turnos." TextColor="#64748B" />
+
+            <Entry x:Name="txtNombre" Placeholder="Nombre" />
+            <Entry x:Name="txtApellido" Placeholder="Apellido" />
+            <Entry x:Name="txtDni" Placeholder="DNI (sin puntos)" Keyboard="Numeric" MaxLength="8" />
+            <Entry x:Name="txtTelefono" Placeholder="Teléfono" Keyboard="Telephone" />
+            <Entry x:Name="txtEmail" Placeholder="Email" Keyboard="Email" />
+            <Entry x:Name="txtUsuario" Placeholder="Usuario" />
+            <Entry x:Name="txtPassword" Placeholder="Contraseña" IsPassword="True" />
+            <Entry x:Name="txtPassword2" Placeholder="Repetir contraseña" IsPassword="True" />
+
+            <Button Text="Registrarme" Clicked="OnRegistrarClicked"
+                    BackgroundColor="#2563EB" TextColor="White" CornerRadius="12" />
+            <Button Text="Ya tengo cuenta" Clicked="OnVolverClicked"
+                    BackgroundColor="White" TextColor="#2563EB" BorderColor="#2563EB" BorderWidth="1" CornerRadius="12" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:e="clr-namespace:ClinicaSePrise.Entidades"
              x:Class="ClinicaSePrise.Vistas.PacientePage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="🚪 Cerrar Sesión" 
@@ -28,11 +29,32 @@
         <VerticalStackLayout Spacing="24" Padding="0,0,0,24">
 
             <VerticalStackLayout Spacing="2">
-                <Label Text="Mi panel" FontSize="26" FontAttributes="Bold" TextColor="#0F172A" />
+                <Label Text="Clínica SePrise - Portal del paciente" FontSize="26" FontAttributes="Bold" TextColor="#0F172A" />
                 <Label Text="Gestioná tus turnos y consultá tus comprobantes." Style="{StaticResource Sub}" />
             </VerticalStackLayout>
 
-            <!-- Mis turnos -->
+            <!-- SOLICITAR TURNO -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Solicitar turno" Style="{StaticResource Titulo}" />
+                    <Picker x:Name="pkEspecialidad" Title="Especialidad" SelectedIndexChanged="OnEspecialidad" />
+                    <Picker x:Name="pkProfesional" Title="Profesional" ItemDisplayBinding="{Binding nombre}" SelectedIndexChanged="BuscarSlots" />
+                    <DatePicker x:Name="dpFecha" DateSelected="BuscarSlots" />
+
+                    <Label Text="Horarios disponibles" FontAttributes="Bold" TextColor="#0F172A" />
+                    <FlexLayout x:Name="ListaSlots" Wrap="Wrap">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="e:Slot">
+                                <Button Text="{Binding hora}" Clicked="OnSlotClicked" Margin="0,0,8,8" Padding="16,0"
+                            BackgroundColor="White" TextColor="#2563EB" BorderColor="#2563EB" BorderWidth="1" CornerRadius="12" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                    <Label x:Name="SinSlots" Text="No hay horarios disponibles para ese día." Style="{StaticResource Sub}" IsVisible="False" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- MIS TURNOS -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
                     <Label Text="Mis turnos" Style="{StaticResource Titulo}" />
@@ -57,6 +79,56 @@
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
                     <Label x:Name="SinTurnos" Text="No tenés turnos." Style="{StaticResource Sub}" IsVisible="False" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- COMPROBANTES DE PAGO -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Comprobantes de pago" Style="{StaticResource Titulo}" />
+                    <VerticalStackLayout x:Name="ListaFacturas" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="e:Factura">
+                                <Border Style="{StaticResource Card}" BackgroundColor="#F8FAFC" Padding="16">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding concepto}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding detalle}" Style="{StaticResource Sub}" />
+                                            <Label Text="{Binding nroComprobante}" Style="{StaticResource Sub}" FontSize="12" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                            <Label Text="{Binding montoTxt}" FontAttributes="Bold" TextColor="#0F172A" HorizontalOptions="End" />
+                                            <Label Text="{Binding estado}" TextColor="#2563EB" HorizontalOptions="End" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Label x:Name="SinFacturas" Text="No tenés comprobantes de pago." Style="{StaticResource Sub}" IsVisible="False" />
+                </VerticalStackLayout>
+            </Border>
+            
+            <!-- COMPROBANTES DE ESTUDIO -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Comprobantes de estudio" Style="{StaticResource Titulo}" />
+                    <VerticalStackLayout x:Name="ListaEstudios" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="e:ComprobanteEstudio">
+                                <Border Style="{StaticResource Card}" BackgroundColor="#F8FAFC" Padding="16">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding nombre}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding fecha}" Style="{StaticResource Sub}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding estado}" TextColor="#2563EB" VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Label x:Name="SinEstudios" Text="No tenés comprobantes de estudio." Style="{StaticResource Sub}" IsVisible="False" />
                 </VerticalStackLayout>
             </Border>
 

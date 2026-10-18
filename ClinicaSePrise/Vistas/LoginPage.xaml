@@ -121,13 +121,19 @@
                                        HorizontalOptions="Center" />
 
                 <!-- Pie de página informativo -->
-                <Label Text="¿No tienes cuenta? Registrate aqui."
-                           FontSize="11"
-                           TextColor="#94A3B8"
-                           HorizontalTextAlignment="Center"
-                           Margin="0,5,0,0" />
+                    <Label HorizontalOptions="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="¿No estás registrado? Hacé clic " TextColor="#64748B" />
+                                <Span Text="aquí" TextColor="#2563EB" TextDecorations="Underline" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCrearCuentaTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
 
-            </VerticalStackLayout>
+                </VerticalStackLayout>
         </ScrollView>
     </Border>
     </Grid>
