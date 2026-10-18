@@ -4,6 +4,12 @@
              x:Class="ClinicaSePrise.Vistas.MedicoPage"
              Title="Consultorio Médico"
              BackgroundColor="#F8FAFC">
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="🚪 Cerrar Sesión" 
+                  Clicked="OnCerrarSesionClicked" 
+                  Order="Primary" />
+    </ContentPage.ToolbarItems>
 
     <Grid ColumnDefinitions="300,*" Padding="20" ColumnSpacing="20">
         <!-- Lista de Pacientes citados hoy -->

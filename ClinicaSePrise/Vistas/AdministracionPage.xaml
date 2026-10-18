@@ -5,6 +5,12 @@
              Title="Panel de Administración"
              BackgroundColor="#F8FAFC">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="🚪 Cerrar Sesión" 
+                  Clicked="OnCerrarSesionClicked" 
+                  Order="Primary" />
+    </ContentPage.ToolbarItems>
+    
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
             <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>

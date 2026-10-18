@@ -87,17 +87,44 @@ public partial class LoginPage : ContentPage
                 // Redirigimos a la pantalla específica según el rol obtenido de la base de datos
                 // Redirigimos a la pantalla específica según el rol obtenido de la base de datos
                 // Redirigimos a la pantalla específica según el rol obtenido de la base de datos
-                Page paginaDestino = rol.ToLower().Trim() switch
+                string rolLimpio = rol?.ToLower().Trim() ?? "";
+
+                Page paginaDestino;
+
+                if (rolLimpio.Contains("paciente"))
                 {
-                    "paciente" => new PacientePage(),
-                    "recepcion" => new RecepcionPage(),
-                    "medico" => new MedicoPage(),
-                    "administracion" => new AdministracionPage(),
-                    "guardia" => new Guardia_InternacionPage(),
-                    "laboratorio" => new LaboratorioPage(),
-                    "asistencial" => new AsistencialPage(),
-                    _ => new HomePage(new Dashboard()) // Si el rol no coincide con ninguno, va al Home por seguridad
-                };
+                    paginaDestino = new PacientePage();
+                }
+                else if (rolLimpio.Contains("recepcion"))
+                {
+                    paginaDestino = new RecepcionPage();
+                }
+                else if (rolLimpio.Contains("medico"))
+                {
+                    paginaDestino = new MedicoPage();
+                }
+                else if (rolLimpio.Contains("administracion"))
+                {
+                    paginaDestino = new AdministracionPage();
+                }
+                else if (rolLimpio.Contains("guardia") || rolLimpio.Contains("internacion"))
+                {
+                    paginaDestino = new Guardia_InternacionPage();
+                }
+                else if (rolLimpio.Contains("laboratorio"))
+                {
+                    paginaDestino = new LaboratorioPage();
+                }
+                else if (rolLimpio.Contains("asistencial"))
+                {
+                    paginaDestino = new AsistencialPage();
+                }
+                else
+                {
+                    // Si entra acá, el cartel te dirá exactamente qué texto falló en la BD
+                    await DisplayAlert("Depuración de Rol", $"El texto recibido de la BD fue: '{rol}'", "OK");
+                    paginaDestino = new HomePage(new Dashboard());
+                }
 
                 Application.Current.MainPage = new NavigationPage(paginaDestino);
 

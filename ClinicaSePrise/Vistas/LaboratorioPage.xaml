@@ -4,6 +4,12 @@
              x:Class="ClinicaSePrise.Vistas.LaboratorioPage"
              Title="Servicio de Laboratorio"
              BackgroundColor="#F0FDF4">
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="🚪 Cerrar Sesión" 
+                  Clicked="OnCerrarSesionClicked" 
+                  Order="Primary" />
+    </ContentPage.ToolbarItems>
 
     <Grid ColumnDefinitions="*,*" Padding="20" ColumnSpacing="15">
         <!-- Recepción y Carga de Resultados -->

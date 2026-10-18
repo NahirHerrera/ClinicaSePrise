@@ -4,7 +4,13 @@
              x:Class="ClinicaSePrise.Vistas.RecepcionPage"
              Title="Recepción y Acreditación"
              BackgroundColor="#F8FAFC">
-
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="🚪 Cerrar Sesión" 
+                 Clicked="OnCerrarSesionClicked" 
+                 Order="Primary" />
+    </ContentPage.ToolbarItems>
+    
     <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
         <VerticalStackLayout Grid.Row="0" Spacing="10">
             <Label Text="Gestión de Recepción" FontSize="22" FontAttributes="Bold"/>

@@ -5,6 +5,12 @@
              Title="Servicios Asistenciales y Diagnóstico"
              BackgroundColor="#FAF5FF">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="🚪 Cerrar Sesión" 
+                  Clicked="OnCerrarSesionClicked" 
+                  Order="Primary" />
+    </ContentPage.ToolbarItems>
+
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
             <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
