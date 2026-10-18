@@ -10,10 +10,18 @@
                   Clicked="OnCerrarSesionClicked" 
                   Order="Primary" />
     </ContentPage.ToolbarItems>
-    
+
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
-            <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+            <!-- Encabezado con Saludo Dinámico -->
+            <VerticalStackLayout Spacing="5">
+                <Label x:Name="lblBienvenida" 
+                       FontSize="14" 
+                       TextColor="Gray" 
+                       FontAttributes="Bold" />
+
+                <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+            </VerticalStackLayout>
 
             <!-- Liquidación de Honorarios a Médicos -->
             <Frame Padding="15" CornerRadius="10">

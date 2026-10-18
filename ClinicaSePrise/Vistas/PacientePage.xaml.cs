@@ -9,8 +9,28 @@ public partial class PacientePage : ContentPage
     public PacientePage()
     {
         InitializeComponent();
+
+        // Construcción del saludo dinámico con Nombre, Apellido y Rol
+        string nombreCompleto = $"{Sesion.Nombre} {Sesion.Apellido}".Trim();
+        string usuario = !string.IsNullOrEmpty(nombreCompleto) ? nombreCompleto : "Usuario";
+
+        if (!string.IsNullOrEmpty(Sesion.Rol))
+        {
+            lblBienvenida.Text = $"Bienvenido/a, {usuario} ({Sesion.Rol})";
+        }
+        else
+        {
+            lblBienvenida.Text = $"Bienvenido/a, {usuario}";
+        }
+
         dpFecha.MinimumDate = DateTime.Today;
-        Loaded += async (_, _) => { await CargarTurnos(); await CargarFacturas(); await CargarEstudios(); await CargarEspecialidades(); };
+        Loaded += async (_, _) =>
+        {
+            await CargarTurnos();
+            await CargarFacturas();
+            await CargarEstudios();
+            await CargarEspecialidades();
+        };
     }
 
     void OnCerrarSesionClicked(object sender, EventArgs e) => Window.Page = new LoginPage();
@@ -45,6 +65,7 @@ public partial class PacientePage : ContentPage
         }
         catch (Exception ex) { await Window.Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
+
     async Task CargarEstudios()
     {
         try
@@ -64,6 +85,7 @@ public partial class PacientePage : ContentPage
         try { pkEspecialidad.ItemsSource = await Db.Query("CALL ListarEspecialidades()", r => r.GetString(0)); }
         catch (Exception ex) { await Window.Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
+
     async void OnEspecialidad(object sender, EventArgs e)
     {
         if (pkEspecialidad.SelectedItem is not string esp) return;
@@ -78,6 +100,7 @@ public partial class PacientePage : ContentPage
         }
         catch (Exception ex) { await Window.Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
+
     async void BuscarSlots(object sender, EventArgs e)
     {
         if (pkProfesional.SelectedItem is not ProfesionalItem p) return;
@@ -92,6 +115,7 @@ public partial class PacientePage : ContentPage
         }
         catch (Exception ex) { await Window.Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
+
     async void OnSlotClicked(object sender, EventArgs e)
     {
         var s = (Slot)((Button)sender).BindingContext;

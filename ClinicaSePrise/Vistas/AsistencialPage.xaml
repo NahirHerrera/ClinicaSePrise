@@ -13,7 +13,15 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
-            <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
+            <!-- Encabezado con Saludo Dinámico -->
+            <VerticalStackLayout Spacing="5">
+                <Label x:Name="lblBienvenida" 
+                       FontSize="14" 
+                       TextColor="Gray" 
+                       FontAttributes="Bold" />
+
+                <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
+            </VerticalStackLayout>
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
                 <Frame Grid.Column="0" Padding="15">

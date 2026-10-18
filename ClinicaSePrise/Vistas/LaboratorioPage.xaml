@@ -4,38 +4,51 @@
              x:Class="ClinicaSePrise.Vistas.LaboratorioPage"
              Title="Servicio de Laboratorio"
              BackgroundColor="#F0FDF4">
-    
+
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="🚪 Cerrar Sesión" 
                   Clicked="OnCerrarSesionClicked" 
                   Order="Primary" />
     </ContentPage.ToolbarItems>
 
-    <Grid ColumnDefinitions="*,*" Padding="20" ColumnSpacing="15">
-        <!-- Recepción y Carga de Resultados -->
-        <VerticalStackLayout Grid.Column="0" Spacing="15">
-            <Label Text="Atención e Ingreso de Resultados" FontSize="20" FontAttributes="Bold" TextColor="#166534"/>
-            <Entry Placeholder="Buscar Comprobante / Protocolo N°"/>
-            <Editor Placeholder="Cargar valores analíticos / observaciones..." HeightRequest="150"/>
-            <Button Text="Cargar y Finalizar Estudio" BackgroundColor="#16A34A" TextColor="White"/>
+    <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
+        <!-- Encabezado con Saludo Dinámico -->
+        <VerticalStackLayout Grid.Row="0" Spacing="5">
+            <Label x:Name="lblBienvenida" 
+                   FontSize="14" 
+                   TextColor="Gray" 
+                   FontAttributes="Bold" />
+
+            <Label Text="Servicio de Laboratorio" FontSize="22" FontAttributes="Bold" TextColor="#166534"/>
         </VerticalStackLayout>
 
-        <!-- Stock Crítico de Insumos -->
-        <Frame Grid.Column="1" Padding="15" CornerRadius="10">
-            <VerticalStackLayout Spacing="10">
-                <Label Text="🧪 Control de Insumos de Laboratorio" FontSize="18" FontAttributes="Bold"/>
-                <CollectionView x:Name="cvStockLaboratorio">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <HorizontalStackLayout Spacing="20" Padding="5">
-                                <Label Text="{Binding NombreInsumo}" VerticalOptions="Center"/>
-                                <Label Text="{Binding StockActual}" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Button Text="Reponer" BackgroundColor="#D97706" TextColor="White"/>
-                            </HorizontalStackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+        <!-- Contenido Principal -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="15">
+            <!-- Recepción y Carga de Resultados -->
+            <VerticalStackLayout Grid.Column="0" Spacing="15">
+                <Label Text="Atención e Ingreso de Resultados" FontSize="18" FontAttributes="Bold" TextColor="#166534"/>
+                <Entry Placeholder="Buscar Comprobante / Protocolo N°"/>
+                <Editor Placeholder="Cargar valores analíticos / observaciones..." HeightRequest="150"/>
+                <Button Text="Cargar y Finalizar Estudio" BackgroundColor="#16A34A" TextColor="White"/>
             </VerticalStackLayout>
-        </Frame>
+
+            <!-- Stock Crítico de Insumos -->
+            <Frame Grid.Column="1" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🧪 Control de Insumos de Laboratorio" FontSize="18" FontAttributes="Bold"/>
+                    <CollectionView x:Name="cvStockLaboratorio">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <HorizontalStackLayout Spacing="20" Padding="5">
+                                    <Label Text="{Binding NombreInsumo}" VerticalOptions="Center"/>
+                                    <Label Text="{Binding StockActual}" FontAttributes="Bold" VerticalOptions="Center"/>
+                                    <Button Text="Reponer" BackgroundColor="#D97706" TextColor="White"/>
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
     </Grid>
 </ContentPage>

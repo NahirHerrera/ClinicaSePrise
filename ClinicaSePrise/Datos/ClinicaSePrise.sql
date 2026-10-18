@@ -299,14 +299,25 @@ CREATE PROCEDURE IngresoLogin(
     IN p_Pass VARCHAR(255)
 )
 BEGIN
-    SELECT *
-    FROM Usuario
-    WHERE Usuario = p_Usu
-      AND Password = SHA2(p_Pass,256)
+    SELECT 
+        u.idUsuario,
+        u.usuario,
+        u.idRol,
+        r.nombre AS rol,
+        u.idPaciente,
+        u.idProfesional,
+        COALESCE(p.nombre, pr.nombre) AS nombre,
+        COALESCE(p.apellido, pr.apellido) AS apellido
+    FROM Usuario u
+    JOIN Rol r ON u.idRol = r.idRol
+    LEFT JOIN Paciente p ON u.idPaciente = p.idPaciente
+    LEFT JOIN Profesional pr ON u.idProfesional = pr.idProfesional
+    WHERE u.usuario = p_Usu
+      AND u.password = SHA2(p_Pass, 256)
     LIMIT 1;
 END //
-DELIMITER ;
 
+DELIMITER ;
 -- AGREGAR PACIENTE
 
 DELIMITER //

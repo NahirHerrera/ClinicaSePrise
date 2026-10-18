@@ -11,6 +11,7 @@ public partial class LoginPage : ContentPage
     {
         InitializeComponent();
     }
+
     private async void OnIngresarClicked(object sender, EventArgs e)
     {
         string usuario = TxtUsuario.Text?.Trim();
@@ -31,7 +32,7 @@ public partial class LoginPage : ContentPage
 
         try
         {
-            // 2. Llamamos al método que agregamos en tu clase Conexion
+            // 2. Llamamos al procedimiento almacenado IngresoLogin actualizado
             using var cn = Conexion.getInstancia().CrearConexion();
             await cn.OpenAsync();
 
@@ -48,45 +49,30 @@ public partial class LoginPage : ContentPage
 
             if (datosUsuario)
             {
-                // Obtenemos los datos del usuario desde la base
+                // Obtenemos todos los datos devueltos en un solo paso
                 int idUsuario = Convert.ToInt32(reader["idUsuario"]);
                 int idRol = Convert.ToInt32(reader["idRol"]);
+                string rol = reader["rol"]?.ToString() ?? "";
 
-                int? idPaciente = reader["idPaciente"] == DBNull.Value
-                    ? null
-                    : Convert.ToInt32(reader["idPaciente"]);
+                int? idPaciente = reader["idPaciente"] == DBNull.Value ? null : Convert.ToInt32(reader["idPaciente"]);
+                int? idProfesional = reader["idProfesional"] == DBNull.Value ? null : Convert.ToInt32(reader["idProfesional"]);
 
-                int? idProfesional = reader["idProfesional"] == DBNull.Value
-                    ? null
-                    : Convert.ToInt32(reader["idProfesional"]);
+                string nombre = reader["nombre"] != DBNull.Value ? reader["nombre"].ToString() : "";
+                string apellido = reader["apellido"] != DBNull.Value ? reader["apellido"].ToString() : "";
 
-                // Guardamos el identificador del paciente
+                // Guardamos los datos en la clase estática Sesion
+                Sesion.IdUsuario = idUsuario;
+                Sesion.IdRol = idRol;
+                Sesion.Rol = rol;
+                Sesion.Nombre = nombre;
+                Sesion.Apellido = apellido;
+
                 if (idPaciente.HasValue)
                     Sesion.IdPaciente = idPaciente.Value;
 
-                // Obtenemos el nombre del rol
-                string rol = "";
+                if (idProfesional.HasValue)
+                    Sesion.IdProfesional = idProfesional.Value;
 
-                // 1. Cerramos la conexión si quedó abierta de la consulta anterior
-                if (cn.State == System.Data.ConnectionState.Open)
-                {
-                    await cn.CloseAsync();
-                }
-
-                // 2. La volvemos a abrir solo para buscar el rol
-                await cn.OpenAsync();
-
-                using (var cmdRol = cn.CreateCommand())
-                {
-                    cmdRol.CommandText = "SELECT nombre FROM Rol WHERE idRol = @idRol;";
-                    cmdRol.Parameters.AddWithValue("@idRol", idRol);
-
-                    object resultado = await cmdRol.ExecuteScalarAsync();
-                    rol = resultado?.ToString() ?? "";
-                }
-                // Redirigimos a la pantalla específica según el rol obtenido de la base de datos
-                // Redirigimos a la pantalla específica según el rol obtenido de la base de datos
-                // Redirigimos a la pantalla específica según el rol obtenido de la base de datos
                 string rolLimpio = rol?.ToLower().Trim() ?? "";
 
                 Page paginaDestino;
@@ -121,13 +107,11 @@ public partial class LoginPage : ContentPage
                 }
                 else
                 {
-                    // Si entra acá, el cartel te dirá exactamente qué texto falló en la BD
                     await DisplayAlert("Depuración de Rol", $"El texto recibido de la BD fue: '{rol}'", "OK");
                     paginaDestino = new HomePage(new Dashboard());
                 }
 
                 Application.Current.MainPage = new NavigationPage(paginaDestino);
-
             }
             else
             {
@@ -145,6 +129,7 @@ public partial class LoginPage : ContentPage
             BtnIngresar.IsEnabled = true;
         }
     }
+
     private void MostrarError(string mensaje)
     {
         LblError.Text = mensaje;

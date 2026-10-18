@@ -4,16 +4,24 @@
              x:Class="ClinicaSePrise.Vistas.Guardia_InternacionPage"
              Title="Guardia e Internación"
              BackgroundColor="#FEF2F2">
-    
+
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="🚪 Cerrar Sesión" 
                  Clicked="OnCerrarSesionClicked" 
                  Order="Primary" />
     </ContentPage.ToolbarItems>
-    
+
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
-            <Label Text="Gestión de Derivaciones a Estudios (Circuito B)" FontSize="22" FontAttributes="Bold" TextColor="#991B1B"/>
+            <!-- Encabezado con Saludo Dinámico -->
+            <VerticalStackLayout Spacing="5">
+                <Label x:Name="lblBienvenida" 
+                       FontSize="14" 
+                       TextColor="Gray" 
+                       FontAttributes="Bold" />
+
+                <Label Text="Gestión de Derivaciones a Estudios (Circuito B)" FontSize="22" FontAttributes="Bold" TextColor="#991B1B"/>
+            </VerticalStackLayout>
 
             <Frame CornerRadius="10" Padding="15">
                 <VerticalStackLayout Spacing="10">
