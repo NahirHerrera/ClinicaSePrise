@@ -306,8 +306,9 @@ BEGIN
         r.nombre AS rol,
         u.idPaciente,
         u.idProfesional,
-        COALESCE(p.nombre, pr.nombre) AS nombre,
-        COALESCE(p.apellido, pr.apellido) AS apellido
+        -- Prioriza Paciente, luego Profesional, y si ambos son NULL, usa los datos de Usuario
+        COALESCE(p.nombre, pr.nombre, u.nombre) AS nombre,
+        COALESCE(p.apellido, pr.apellido, u.apellido) AS apellido
     FROM Usuario u
     JOIN Rol r ON u.idRol = r.idRol
     LEFT JOIN Paciente p ON u.idPaciente = p.idPaciente
@@ -316,8 +317,8 @@ BEGIN
       AND u.password = SHA2(p_Pass, 256)
     LIMIT 1;
 END //
-
 DELIMITER ;
+
 -- AGREGAR PACIENTE
 
 DELIMITER //
@@ -767,3 +768,11 @@ SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
+
+ALTER TABLE Usuario 
+ADD COLUMN nombre VARCHAR(100) AFTER password,
+ADD COLUMN apellido VARCHAR(100) AFTER nombre;
+
+UPDATE Usuario 
+SET nombre = 'Andrea', apellido = 'García' 
+WHERE usuario = 'agarcia';
