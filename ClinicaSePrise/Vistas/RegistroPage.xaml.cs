@@ -32,7 +32,7 @@ public partial class RegistroPage : ContentPage
 
             if (error.Count > 0)
             {
-                await Window.Page!.DisplayAlertAsync("No se pudo", error[0], "OK");
+                await Window.Page!.DisplayAlertAsync("No se posible registrar este paciente", error[0], "OK");
                 return;
             }
             await Window.Page!.DisplayAlertAsync("Listo", "Cuenta creada. Ya podés iniciar sesión.", "OK");
