@@ -49,11 +49,16 @@
                                     </x:Array>
                                 </Picker.ItemsSource>
                             </Picker>
-                            <DatePicker Grid.Column="1" x:Name="dpFechaNacimiento" />
+                            <Entry Grid.Column="1" 
+                                   x:Name="entFechaNacimiento" 
+                                   Placeholder="DD/MM/AAAA" 
+                                   MaxLength="10" 
+                                   Keyboard="Numeric"
+                                   TextChanged="OnFechaNacimientoTextChanged" />
                         </Grid>
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Picker Grid.Column="0" x:Name="pkModalidadCobertura" Title="Cobertura">
+                            <Picker Grid.Column="0" x:Name="pkModalidadCobertura" Title="Cobertura" SelectedIndexChanged="OnModalidadChanged">
                                 <Picker.ItemsSource>
                                     <x:Array Type="{x:Type x:String}">
                                         <x:String>Particular</x:String>
@@ -61,13 +66,25 @@
                                     </x:Array>
                                 </Picker.ItemsSource>
                             </Picker>
-                            <Entry Grid.Column="1" x:Name="entObraSocial" Placeholder="Nombre de Obra Social" />
+
+                            <!-- Picker de Obra Social (oculto por defecto hasta que seleccione Obra Social) -->
+                            <Picker Grid.Column="1" x:Name="pkObraSocial" Title="Seleccione Obra Social" IsVisible="False">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>OSDE</x:String>
+                                        <x:String>Swiss Medical</x:String>
+                                        <x:String>OSECAC</x:String>
+                                        <x:String>PAMI</x:String>
+                                        <x:String>Galeno</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
                         </Grid>
                     </VerticalStackLayout>
                     <!-- FIN FORMULARIO DE REGISTRO -->
 
                     <!-- Listado de Prácticas / Determinaciones -->
-                    <CollectionView x:Name="cvPracticas" SelectionMode="Multiple" HeightRequest="250">
+                    <CollectionView x:Name="cvPracticas" SelectionMode="Multiple" SelectionChanged="OnPracticaSelectionChanged" HeightRequest="250">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="ent:PracticaLab">
                                 <Label Padding="6" Text="{Binding Descripcion}" />
@@ -75,7 +92,11 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                    <Entry x:Name="entMonto" Placeholder="Monto a cobrar" Keyboard="Numeric" />
+                    <!-- MONTO CON SIGNO PESOS FIJO ($) -->
+                    <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                        <Label Text="$" FontSize="18" FontAttributes="Bold" VerticalTextAlignment="Center" />
+                        <Entry x:Name="entMonto" Placeholder="0.00" IsReadOnly="True" HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
 
                     <Picker x:Name="pkMedio" Title="Medio de pago">
                         <Picker.ItemsSource>

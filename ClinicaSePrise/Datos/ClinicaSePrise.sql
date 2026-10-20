@@ -161,6 +161,7 @@ CREATE TABLE Insumo (
 );
 
 -- Qué insumos (y cuántos) consume cada práctica
+
 CREATE TABLE EstudioInsumo (
     idEstudio INT NOT NULL,
     idInsumo INT NOT NULL,
@@ -170,8 +171,9 @@ CREATE TABLE EstudioInsumo (
     FOREIGN KEY (idInsumo) REFERENCES Insumo(idInsumo)
 );
 
--- Laboratorio (sin turno): la orden nace cuando Recepción acredita y cobra
+-- Laboratorio (sin turno): la orden nace cuando el servicio acredita y cobra
 -- estado: Acreditada -> Llamada -> Atendida
+
 CREATE TABLE OrdenLab (
     idOrden INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     idPaciente INT NOT NULL,
@@ -336,28 +338,43 @@ DELIMITER ;
 -- REGISTRAR PACIENTE EN LABORATORIO
 
 DELIMITER //
-CREATE PROCEDURE RegistrarPacienteLaboratorio(
+CREATE PROCEDURE RegistrarPacienteYOrdenLab(
     IN p_nombre VARCHAR(100),
     IN p_apellido VARCHAR(100),
     IN p_dni VARCHAR(20),
     IN p_sexo VARCHAR(20),
     IN p_fechaNacimiento DATE,
     IN p_modalidadCobertura VARCHAR(50),
-    IN p_obraSocial VARCHAR(100)
+    IN p_obraSocial VARCHAR(100),
+    IN p_idsEstudios VARCHAR(255),
+    IN p_monto DECIMAL(12,2),
+    IN p_medioPago VARCHAR(30)
 )
-reg_lab: BEGIN
-    -- Validar si ya existe el paciente por DNI
-    IF EXISTS (SELECT 1 FROM Paciente WHERE dni = p_dni) THEN
-        SELECT 'Error: ya existe un paciente registrado con ese DNI' AS mensaje;
-        LEAVE reg_lab;
+proc: BEGIN
+    DECLARE v_idPaciente INT;
+
+    -- Manejo de transacción
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 'Error: No se pudo completar el registro y la orden' AS mensaje;
+    END;
+
+    START TRANSACTION;
+
+    -- 1. Registrar paciente si no existe
+    IF NOT EXISTS (SELECT 1 FROM Paciente WHERE dni = p_dni) THEN
+        INSERT INTO Paciente (nombre, apellido, dni, sexo, fechaNacimiento, modalidadCobertura, obraSocial)
+        VALUES (p_nombre, p_apellido, p_dni, p_sexo, p_fechaNacimiento, p_modalidadCobertura, p_obraSocial);
+        SET v_idPaciente = LAST_INSERT_ID();
+    ELSE
+        SELECT idPaciente INTO v_idPaciente FROM Paciente WHERE dni = p_dni;
     END IF;
 
-    -- Insertar el nuevo paciente con los datos rápidos de laboratorio
-    INSERT INTO Paciente (nombre, apellido, dni, sexo, fechaNacimiento, modalidadCobertura, obraSocial)
-    VALUES (p_nombre, p_apellido, p_dni, p_sexo, p_fechaNacimiento, p_modalidadCobertura, p_obraSocial);
-    
-    -- Retornar el ID generado para poder usarlo inmediatamente en la orden
-    SELECT 'OK' AS mensaje, LAST_INSERT_ID() AS idPaciente;
+    -- 2. Registrar la orden de laboratorio asociada
+    CALL RegistrarOrdenLab(v_idPaciente, p_idsEstudios, p_monto, p_medioPago);
+
+    COMMIT;
 END //
 DELIMITER ;
 
@@ -843,6 +860,7 @@ INSERT INTO Estudio (idEstudio, nombre, especialidad, requisitosPrevios, horario
 (3, 'Electrocardiograma', 'Cardiología', 'Sin requisitos', '08:00-14:00', 'Cardiología', 0),
 (4, 'Análisis de sangre', 'Laboratorio', 'Ayuno 12 horas', '07:00-11:00', 'Laboratorio Central', 1),
 (5, 'Radiografía de tórax', 'Diagnóstico por imágenes', 'Sin requisitos', '10:00-16:00', 'Sector Rayos X', 0),
+
 -- Prácticas de laboratorio CON ayuno (7 a 11)
 (6, 'Glucemia', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
 (7, 'Colesterol total', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
@@ -855,6 +873,7 @@ INSERT INTO Estudio (idEstudio, nombre, especialidad, requisitosPrevios, horario
 (14, 'Hepatograma', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
 (15, 'Hierro sérico', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
 (16, 'Ionograma', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
+
 -- Prácticas de laboratorio SIN ayuno (7 a 17)
 (17, 'Hemograma completo', 'Laboratorio', 'Sin requisitos', '07:00-17:00', 'Laboratorio Central', 0),
 (18, 'Eritrosedimentación', 'Laboratorio', 'Sin requisitos', '07:00-17:00', 'Laboratorio Central', 0),

@@ -154,13 +154,20 @@ public partial class LaboratorioPage : ContentPage
             string apellido = entApellido.Text?.Trim();
             string dni = entDni.Text?.Trim();
             string sexo = pkSexo.SelectedItem?.ToString();
-            DateTime fechaNac = dpFechaNacimiento.Date ?? DateTime.Today;
+            string fechaNacStr = entFechaNacimiento.Text?.Trim();
             string modalidad = pkModalidadCobertura.SelectedItem?.ToString();
-            string obraSocial = entObraSocial.Text?.Trim();
+            string obraSocial = pkObraSocial.SelectedItem?.ToString();
 
-            if (string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(apellido) || string.IsNullOrEmpty(sexo) || string.IsNullOrEmpty(modalidad))
+            if (string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(apellido) || string.IsNullOrEmpty(sexo) || string.IsNullOrEmpty(modalidad) || string.IsNullOrEmpty(fechaNacStr))
             {
                 await DisplayAlert("Laboratorio", "Complete todos los datos del nuevo paciente", "OK");
+                return;
+            }
+
+            // Validar que la fecha escrita a mano tenga el formato correcto (dd/MM/yyyy)
+            if (!DateTime.TryParseExact(fechaNacStr, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime fechaNac))
+            {
+                await DisplayAlert("Laboratorio", "Formato de fecha inválido. Ingrese la fecha en formato DD/MM/AAAA", "OK");
                 return;
             }
 
@@ -196,7 +203,8 @@ public partial class LaboratorioPage : ContentPage
 
         // Limpiar controles tras el éxito
         idPac = 0;
-        entDni.Text = entMonto.Text = lblPacNuevo.Text = entNombre.Text = entApellido.Text = entObraSocial.Text = "";
+        entDni.Text = entMonto.Text = lblPacNuevo.Text = entNombre.Text = entApellido.Text = entFechaNacimiento.Text = "";
+        pkSexo.SelectedIndex = pkModalidadCobertura.SelectedIndex = pkObraSocial.SelectedIndex = pkMedio.SelectedIndex = -1;
         pkSexo.SelectedIndex = pkModalidadCobertura.SelectedIndex = pkMedio.SelectedIndex = -1;
         stFormularioPaciente.IsVisible = false;
         cvPracticas.SelectedItems.Clear();
