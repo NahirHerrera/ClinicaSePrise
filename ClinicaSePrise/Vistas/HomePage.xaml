@@ -5,137 +5,115 @@
              BackgroundColor="{StaticResource Fondo}">
 
     <ContentPage.Resources>
+        <!-- Card conserva padding interno -->
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="BackgroundColor" Value="White" />
             <Setter Property="Stroke" Value="{StaticResource Borde}" />
             <Setter Property="StrokeShape" Value="RoundRectangle 16" />
             <Setter Property="Padding" Value="20" />
+            <!-- PADDING INTERNO CONSERVADO -->
+            <Setter Property="Margin" Value="0" />
         </Style>
+
         <Style x:Key="MenuItem" TargetType="Border">
             <Setter Property="StrokeThickness" Value="0" />
             <Setter Property="StrokeShape" Value="RoundRectangle 10" />
             <Setter Property="Padding" Value="14,12" />
+            <!-- padding interno del item -->
+            <Setter Property="Margin" Value="0" />
         </Style>
+
         <Style x:Key="MenuText" TargetType="Label">
             <Setter Property="TextColor" Value="{StaticResource Gris}" />
+            <Setter Property="Margin" Value="0" />
         </Style>
     </ContentPage.Resources>
 
-    <Grid ColumnDefinitions="260,*">
 
-        <!-- SIDEBAR -->
-        <Border Grid.Column="0" BackgroundColor="White" Stroke="{StaticResource Borde}" Padding="16">
-            <Grid RowDefinitions="*,Auto">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Clínica SePrise" FontSize="20" FontAttributes="Bold" />
-                <Label Text="Gestión médica" TextColor="{StaticResource Gris}" Margin="0,0,0,24" />
-                <Label Text="MENÚ PRINCIPAL" FontSize="11" TextColor="{StaticResource Gris}" Margin="0,0,0,8" />
+    <Grid ColumnDefinitions="*">
 
-                <VerticalStackLayout Spacing="4" BindableLayout.ItemsSource="{Binding Pantallas}">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource MenuItem}">
-                                <Border.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding .}" Value="Dashboard">
-                                        <Setter Property="BackgroundColor" Value="{StaticResource AzulClaro}" />
-                                    </DataTrigger>
-                                </Border.Triggers>
-                                <Label Text="{Binding .}" Style="{StaticResource MenuText}">
-                                    <Label.Triggers>
-                                        <DataTrigger TargetType="Label" Binding="{Binding .}" Value="Dashboard">
-                                            <Setter Property="TextColor" Value="{StaticResource Azul}" />
-                                            <Setter Property="FontAttributes" Value="Bold" />
-                                        </DataTrigger>
-                                    </Label.Triggers>
-                                </Label>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
-            </VerticalStackLayout>
+        <ScrollView x:Name="VistaStaff" Grid.Column="0" BackgroundColor="Transparent" Margin="0" Padding="0">
+            <VerticalStackLayout Padding="0" Spacing="12" Margin="0">
 
-            <!-- Cerrar sesión: vuelve al login para entrar con otro usuario -->
-            <Button Grid.Row="1" Text="Cerrar sesión" BackgroundColor="White"
-                    TextColor="Red" BorderColor="{StaticResource Borde}" BorderWidth="1"
-                    CornerRadius="10" HeightRequest="44" Clicked="OnCerrarSesion" />
-            </Grid>
-        </Border>
+                <Label x:Name="lblBienvenida"
+                       FontSize="14"
+                       TextColor="Gray"
+                       FontAttributes="Bold"
+                       Margin="0" />
 
-        <!-- CONTENIDO -->
-        <ScrollView x:Name="VistaStaff" Grid.Column="1">
-            <VerticalStackLayout Padding="40,30" Spacing="24">
+                <Grid ColumnDefinitions="*,Auto" Margin="0" Padding="0">
+                    <Border Style="{StaticResource Card}" HeightRequest="48" HorizontalOptions="Fill">
 
-                <!-- Barra superior -->
-                <Grid ColumnDefinitions="*,Auto">
-                    <Border Style="{StaticResource Card}" Padding="14,0" HeightRequest="48" WidthRequest="420" HorizontalOptions="Start">
-                        <Entry Placeholder="Buscar pacientes por nombre o DNI..." />
+                        <Entry Placeholder="Buscar pacientes por nombre o DNI..." HorizontalOptions="Fill" Margin="0" />
                     </Border>
-                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                        <Label Text="{Binding Usuario}" FontAttributes="Bold" HorizontalOptions="End" />
-                        <Label Text="{Binding Rol}" FontSize="12" TextColor="{StaticResource Gris}" HorizontalOptions="End" />
+
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Padding="0" Margin="0">
+                        <Label Text="{Binding Usuario}" FontAttributes="Bold" HorizontalOptions="End" Margin="0" />
+                        <Label Text="{Binding Rol}" FontSize="12" TextColor="{StaticResource Gris}" HorizontalOptions="End" Margin="0" />
                     </VerticalStackLayout>
                 </Grid>
 
-                <!-- Saludo + botón -->
-                <Grid ColumnDefinitions="*,Auto">
-                    <VerticalStackLayout>
-                        <Label Text="{Binding Fecha}" TextColor="{StaticResource Azul}" FontSize="13" />
-                        <Label Text="{Binding Usuario, StringFormat='Buenos días, {0}'}" FontSize="32" />
-                        <Label Text="Este es el resumen de actividad de hoy." TextColor="{StaticResource Gris}" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0" Padding="0">
+                    <VerticalStackLayout Padding="0" Margin="0">
+                        <Label Text="{Binding Fecha}" TextColor="{StaticResource Azul}" FontSize="13" Margin="0" />
+                        <Label Text="{Binding Usuario, StringFormat='Buenos días, {0}'}" FontSize="32" Margin="0" />
+                        <Label Text="Este es el resumen de actividad de hoy." TextColor="{StaticResource Gris}" Margin="0" />
                     </VerticalStackLayout>
+
                     <Button Grid.Column="1" Text="+  Nuevo turno" BackgroundColor="{StaticResource Azul}"
                             TextColor="White" CornerRadius="10" HeightRequest="50" VerticalOptions="End"
-                            Clicked="OnNuevoTurno" />
+                            Clicked="OnNuevoTurno" Margin="0" />
                 </Grid>
 
-                <!-- Tarjetas -->
-                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="20">
-                    <Border Grid.Column="0" Style="{StaticResource Card}">
-                        <VerticalStackLayout>
-                            <Label Text="Turnos de hoy" TextColor="{StaticResource Gris}" />
-                            <Label Text="{Binding TurnosHoy}" FontSize="28" FontAttributes="Bold" />
+                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12" Margin="0" Padding="0">
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0">
+                        <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
+                            <Label Text="Turnos de hoy" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="{Binding TurnosHoy}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
-                    <Border Grid.Column="1" Style="{StaticResource Card}">
-                        <VerticalStackLayout>
-                            <Label Text="Pacientes atendidos" TextColor="{StaticResource Gris}" />
-                            <Label Text="{Binding Atendidos}" FontSize="28" FontAttributes="Bold" />
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0">
+                        <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
+                            <Label Text="Pacientes atendidos" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="{Binding Atendidos}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
-                    <Border Grid.Column="2" Style="{StaticResource Card}">
-                        <VerticalStackLayout>
-                            <Label Text="En sala de espera" TextColor="{StaticResource Gris}" />
-                            <Label Text="{Binding EnEspera}" FontSize="28" FontAttributes="Bold" />
+
+                    <Border Grid.Column="2" Style="{StaticResource Card}" Margin="0">
+                        <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
+                            <Label Text="En sala de espera" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="{Binding EnEspera}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
-                    <Border Grid.Column="3" Style="{StaticResource Card}">
-                        <VerticalStackLayout>
-                            <Label Text="Insumos críticos" TextColor="{StaticResource Gris}" />
-                            <Label Text="{Binding InsumosCriticos}" FontSize="28" FontAttributes="Bold" />
+
+                    <Border Grid.Column="3" Style="{StaticResource Card}" Margin="0">
+                        <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
+                            <Label Text="Insumos críticos" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="{Binding InsumosCriticos}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
 
-                <!-- Listas -->
-                <Grid ColumnDefinitions="2*,*" ColumnSpacing="20">
+                <Grid ColumnDefinitions="2*,*" ColumnSpacing="12" Margin="0" Padding="0">
 
-                    <Border Grid.Column="0" Style="{StaticResource Card}">
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="Próximos turnos" FontSize="18" />
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Turnos}">
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0">
+                        <VerticalStackLayout Spacing="8" Padding="0" Margin="0">
+                            <Label Text="Próximos turnos" FontSize="18" Margin="0" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Turnos}" Padding="0" Margin="0">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid ColumnDefinitions="80,*,*,100" Padding="0,10">
-                                            <VerticalStackLayout>
-                                                <Label Text="{Binding Hora}" FontAttributes="Bold" />
-                                                <Label Text="{Binding Duracion}" FontSize="12" TextColor="{StaticResource Gris}" />
+                                        <Grid ColumnDefinitions="80,*,*,100" Padding="0" Margin="0">
+                                            <VerticalStackLayout Padding="0" Margin="0">
+                                                <Label Text="{Binding Hora}" FontAttributes="Bold" Margin="0" />
+                                                <Label Text="{Binding Duracion}" FontSize="12" TextColor="{StaticResource Gris}" Margin="0" />
                                             </VerticalStackLayout>
-                                            <VerticalStackLayout Grid.Column="1">
-                                                <Label Text="{Binding Paciente}" FontAttributes="Bold" />
-                                                <Label Text="{Binding Dni}" FontSize="12" TextColor="{StaticResource Gris}" />
+                                            <VerticalStackLayout Grid.Column="1" Padding="0" Margin="0">
+                                                <Label Text="{Binding Paciente}" FontAttributes="Bold" Margin="0" />
+                                                <Label Text="{Binding Dni}" FontSize="12" TextColor="{StaticResource Gris}" Margin="0" />
                                             </VerticalStackLayout>
-                                            <Label Grid.Column="2" Text="{Binding Profesional}" />
-                                            <Label Grid.Column="3" Text="{Binding Estado}" FontAttributes="Bold" TextColor="{StaticResource Azul}">
+                                            <Label Grid.Column="2" Text="{Binding Profesional}" Margin="0" />
+                                            <Label Grid.Column="3" Text="{Binding Estado}" FontAttributes="Bold" TextColor="{StaticResource Azul}" Margin="0">
                                                 <Label.Triggers>
                                                     <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="Confirmado">
                                                         <Setter Property="TextColor" Value="Green" />
@@ -152,18 +130,18 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Grid.Column="1" Style="{StaticResource Card}">
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="Stock crítico" FontSize="18" />
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Stock}">
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0">
+                        <VerticalStackLayout Spacing="8" Padding="0" Margin="0">
+                            <Label Text="Stock crítico" FontSize="18" Margin="0" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Stock}" Padding="0" Margin="0">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid ColumnDefinitions="*,Auto" Padding="0,10">
-                                            <VerticalStackLayout>
-                                                <Label Text="{Binding Nombre}" FontAttributes="Bold" />
-                                                <Label Text="{Binding Sector}" FontSize="12" TextColor="{StaticResource Gris}" />
+                                        <Grid ColumnDefinitions="*,Auto" Padding="0" Margin="0">
+                                            <VerticalStackLayout Padding="0" Margin="0">
+                                                <Label Text="{Binding Nombre}" FontAttributes="Bold" Margin="0" />
+                                                <Label Text="{Binding Sector}" FontSize="12" TextColor="{StaticResource Gris}" Margin="0" />
                                             </VerticalStackLayout>
-                                            <Label Grid.Column="1" Text="{Binding Stock, StringFormat='{0} u.'}" TextColor="Red" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding Stock, StringFormat='{0} u.'}" TextColor="Red" VerticalOptions="Center" Margin="0" />
                                         </Grid>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -174,6 +152,8 @@
                 </Grid>
             </VerticalStackLayout>
         </ScrollView>
-        <ContentView x:Name="VistaPaciente" Grid.Column="1" Margin="40,30" IsVisible="False" />
+
+
+        <ContentView x:Name="VistaPaciente" Grid.Column="0" Margin="0" IsVisible="False" />
     </Grid>
 </ContentPage>

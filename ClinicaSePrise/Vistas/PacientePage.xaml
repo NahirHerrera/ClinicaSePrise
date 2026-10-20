@@ -4,11 +4,7 @@
              xmlns:e="clr-namespace:ClinicaSePrise.Entidades"
              x:Class="ClinicaSePrise.Vistas.PacientePage">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión"
-                     Clicked="OnCerrarSesionClicked"
-                     Order="Primary" />
-    </ContentPage.ToolbarItems>
+
 
     <ContentPage.Resources>
         <Style x:Key="Card" TargetType="Border">

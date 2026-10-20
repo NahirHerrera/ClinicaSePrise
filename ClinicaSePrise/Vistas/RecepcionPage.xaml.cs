@@ -10,30 +10,6 @@ public partial class RecepcionPage : ContentPage
     {
         InitializeComponent();
 
-        // --- LÓGICA DE SALUDO DINÁMICO ---
-        string nombreCompleto = $"{Sesion.Nombre} {Sesion.Apellido}".Trim();
-        string rolActual = Sesion.Rol?.Trim() ?? "";
-
-        // Roles que muestran nombre y apellido (Paciente, Médico, Administrativo)
-        bool esRolConNombre = rolActual.Equals("Paciente", StringComparison.OrdinalIgnoreCase) ||
-                              rolActual.Equals("Medico", StringComparison.OrdinalIgnoreCase) ||
-                              rolActual.Equals("Administracion", StringComparison.OrdinalIgnoreCase);
-
-        if (esRolConNombre)
-        {
-            string usuario = !string.IsNullOrEmpty(nombreCompleto) ? nombreCompleto : "Usuario";
-            lblBienvenida.Text = $"Bienvenido/a, {usuario} ({rolActual})";
-        }
-        else if (!string.IsNullOrEmpty(rolActual))
-        {
-            // Para roles operativos genéricos como Recepción (mostrará "Bienvenido/a, Recepcion")
-            lblBienvenida.Text = $"Bienvenido/a, {rolActual}";
-        }
-        else
-        {
-            lblBienvenida.Text = "Bienvenido/a";
-        }
-        // ---------------------------------
     }
 
     private void OnAcreditarClicked(object sender, EventArgs e)

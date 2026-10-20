@@ -2,139 +2,99 @@ using ClinicaSePrise.Datos;
 using ClinicaSePrise.Entidades;
 using MySqlConnector;
 using System.Data;
+using Microsoft.Maui.Controls;
 
-namespace ClinicaSePrise.Vistas;
-
-public partial class LoginPage : ContentPage
+namespace ClinicaSePrise.Vistas
 {
-    public LoginPage()
+    public partial class LoginPage : ContentPage
     {
-        InitializeComponent();
-    }
-
-    private async void OnIngresarClicked(object sender, EventArgs e)
-    {
-        string usuario = TxtUsuario.Text?.Trim();
-        string password = TxtPassword.Text;
-
-        // 1. Validar que los campos no estén vacíos
-        if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(password))
+        public LoginPage()
         {
-            MostrarError("Por favor, complete todos los campos.");
-            return;
+            InitializeComponent();
         }
 
-        // Mostrar indicador de carga y bloquear botón
-        IndicadorCarga.IsVisible = true;
-        IndicadorCarga.IsRunning = true;
-        BtnIngresar.IsEnabled = false;
-        FrameError.IsVisible = false;
-
-        try
+        private async void OnIngresarClicked(object sender, EventArgs e)
         {
-            // 2. Llamamos al procedimiento almacenado IngresoLogin actualizado
-            using var cn = Conexion.getInstancia().CrearConexion();
-            await cn.OpenAsync();
+            string usuario = TxtUsuario.Text?.Trim();
+            string password = TxtPassword.Text;
 
-            using var cmd = cn.CreateCommand();
-            cmd.CommandText = "IngresoLogin";
-            cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-            cmd.Parameters.AddWithValue("p_Usu", usuario);
-            cmd.Parameters.AddWithValue("p_Pass", password);
-
-            using var reader = await cmd.ExecuteReaderAsync();
-
-            bool datosUsuario = await reader.ReadAsync();
-
-            if (datosUsuario)
+            // Validar que los campos no estén vacíos
+            if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(password))
             {
-                // Obtenemos todos los datos devueltos en un solo paso
-                int idUsuario = Convert.ToInt32(reader["idUsuario"]);
-                int idRol = Convert.ToInt32(reader["idRol"]);
-                string rol = reader["rol"]?.ToString() ?? "";
+                MostrarError("Por favor, complete todos los campos.");
+                return;
+            }
 
-                int? idPaciente = reader["idPaciente"] == DBNull.Value ? null : Convert.ToInt32(reader["idPaciente"]);
-                int? idProfesional = reader["idProfesional"] == DBNull.Value ? null : Convert.ToInt32(reader["idProfesional"]);
+            // Mostrar indicador de carga y bloquear botón
+            IndicadorCarga.IsVisible = true;
+            IndicadorCarga.IsRunning = true;
+            BtnIngresar.IsEnabled = false;
+            FrameError.IsVisible = false;
 
-                string nombre = reader["nombre"] != DBNull.Value ? reader["nombre"].ToString() : "";
-                string apellido = reader["apellido"] != DBNull.Value ? reader["apellido"].ToString() : "";
+            try
+            {
+                using var cn = Conexion.getInstancia().CrearConexion();
+                await cn.OpenAsync();
 
-                // Guardamos los datos en la clase estática Sesion
-                Sesion.IdUsuario = idUsuario;
-                Sesion.IdRol = idRol;
-                Sesion.Rol = rol;
-                Sesion.Nombre = nombre;
-                Sesion.Apellido = apellido;
+                using var cmd = cn.CreateCommand();
+                cmd.CommandText = "IngresoLogin";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                if (idPaciente.HasValue)
-                    Sesion.IdPaciente = idPaciente.Value;
+                cmd.Parameters.AddWithValue("p_Usu", usuario);
+                cmd.Parameters.AddWithValue("p_Pass", password);
 
-                if (idProfesional.HasValue)
-                    Sesion.IdProfesional = idProfesional.Value;
+                using var reader = await cmd.ExecuteReaderAsync();
+                bool datosUsuario = await reader.ReadAsync();
 
-                string rolLimpio = rol?.ToLower().Trim() ?? "";
-
-                Page paginaDestino;
-
-                if (rolLimpio.Contains("paciente"))
+                if (datosUsuario)
                 {
-                    paginaDestino = new PacientePage();
-                }
-                else if (rolLimpio.Contains("recepcion"))
-                {
-                    paginaDestino = new RecepcionPage();
-                }
-                else if (rolLimpio.Contains("medico"))
-                {
-                    paginaDestino = new MedicoPage();
-                }
-                else if (rolLimpio.Contains("administracion"))
-                {
-                    paginaDestino = new AdministracionPage();
-                }
-                else if (rolLimpio.Contains("guardia") || rolLimpio.Contains("internacion"))
-                {
-                    paginaDestino = new Guardia_InternacionPage();
-                }
-                else if (rolLimpio.Contains("laboratorio"))
-                {
-                    paginaDestino = new LaboratorioPage();
-                }
-                else if (rolLimpio.Contains("asistencial"))
-                {
-                    paginaDestino = new AsistencialPage();
+                    // Leer valores (idPaciente/idProfesional vienen como int (0 si no hay vínculo) desde el SP)
+                    int idUsuario = reader["idUsuario"] != DBNull.Value ? Convert.ToInt32(reader["idUsuario"]) : 0;
+                    int idRol = reader["idRol"] != DBNull.Value ? Convert.ToInt32(reader["idRol"]) : 0;
+                    string rol = reader["rol"]?.ToString() ?? "";
+
+                    int idPaciente = reader["idPaciente"] != DBNull.Value ? Convert.ToInt32(reader["idPaciente"]) : 0;
+                    int idProfesional = reader["idProfesional"] != DBNull.Value ? Convert.ToInt32(reader["idProfesional"]) : 0;
+
+                    string displayNombre = reader["displayNombre"] != DBNull.Value ? reader["displayNombre"].ToString() ?? "" : "";
+
+
+                    Sesion.IdUsuario = idUsuario;
+                    Sesion.IdRol = idRol;
+                    Sesion.Rol = rol;
+                    Sesion.DisplayNombre = displayNombre;
+                    Sesion.IdPaciente = idPaciente;
+                    Sesion.IdProfesional = idProfesional;
+
+
+                    Page paginaDestino = new HomePage();
+
+
+                    Application.Current.MainPage = new NavigationPage(new MainPage(paginaDestino));
                 }
                 else
                 {
-                    await DisplayAlert("Depuración de Rol", $"El texto recibido de la BD fue: '{rol}'", "OK");
-                    paginaDestino = new HomePage(new Dashboard());
+                    MostrarError("Usuario o contraseña incorrectos.");
                 }
-
-                Application.Current.MainPage = new NavigationPage(paginaDestino);
             }
-            else
+            catch (Exception ex)
             {
-                MostrarError("Usuario o contraseña incorrectos.");
+                await DisplayAlert("Error", ex.ToString(), "OK");
+            }
+            finally
+            {
+                IndicadorCarga.IsVisible = false;
+                IndicadorCarga.IsRunning = false;
+                BtnIngresar.IsEnabled = true;
             }
         }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Error", ex.ToString(), "OK");
-        }
-        finally
-        {
-            IndicadorCarga.IsVisible = false;
-            IndicadorCarga.IsRunning = false;
-            BtnIngresar.IsEnabled = true;
-        }
-    }
 
-    private void MostrarError(string mensaje)
-    {
-        LblError.Text = mensaje;
-        FrameError.IsVisible = true;
-    }
+        private void MostrarError(string mensaje)
+        {
+            LblError.Text = mensaje;
+            FrameError.IsVisible = true;
+        }
 
-    void OnCrearCuentaTapped(object sender, TappedEventArgs e) => Window.Page = new RegistroPage();
+        void OnCrearCuentaTapped(object sender, TappedEventArgs e) => Window.Page = new RegistroPage();
+    }
 }

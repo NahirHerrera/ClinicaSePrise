@@ -54,6 +54,7 @@ CREATE TABLE Usuario (
     idUsuario INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     usuario VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    displayNombre VARCHAR(255) NOT NULL,
     idRol INT NOT NULL,
     idPaciente INT NULL,
     idProfesional INT NULL,
@@ -205,50 +206,68 @@ CREATE TABLE Factura (
 -- CREAR USUARIO
 
 DELIMITER //
+
 CREATE PROCEDURE CrearUsuario(
   IN p_usuario VARCHAR(50),
   IN p_password VARCHAR(255),
+  IN p_displayNombre VARCHAR(255),
   IN p_idRol INT,
   IN p_idPaciente INT,
   IN p_idProfesional INT
 )
-crear: BEGIN
+proc: BEGIN
+  -- Usuario único
   IF EXISTS(SELECT 1 FROM Usuario WHERE usuario = p_usuario) THEN
-    SELECT 'Error: usuario ya existe' AS resultado;
-    LEAVE crear;
+    SELECT 'ERROR: usuario ya existe' AS resultado;
+    LEAVE proc;
   END IF;
 
+  -- Rol existe
   IF NOT EXISTS(SELECT 1 FROM Rol WHERE idRol = p_idRol) THEN
-    SELECT 'Error: rol no existe' AS resultado;
-    LEAVE crear;
+    SELECT 'ERROR: rol no existe' AS resultado;
+    LEAVE proc;
   END IF;
 
+  -- No permitir ambos perfiles
+  IF p_idPaciente IS NOT NULL AND p_idProfesional IS NOT NULL THEN
+    SELECT 'ERROR: no puede ser paciente y profesional a la vez' AS resultado;
+    LEAVE proc;
+  END IF;
+
+  -- Validar paciente
   IF p_idPaciente IS NOT NULL THEN
     IF NOT EXISTS(SELECT 1 FROM Paciente WHERE idPaciente = p_idPaciente) THEN
-      SELECT 'Error: paciente no existe' AS resultado;
-      LEAVE crear;
+      SELECT 'ERROR: paciente no existe' AS resultado;
+      LEAVE proc;
     END IF;
     IF EXISTS(SELECT 1 FROM Usuario WHERE idPaciente = p_idPaciente) THEN
-      SELECT 'Error: paciente ya vinculado a otro usuario' AS resultado;
-      LEAVE crear;
+      SELECT 'ERROR: paciente ya vinculado' AS resultado;
+      LEAVE proc;
     END IF;
   END IF;
 
+  -- Validar profesional
   IF p_idProfesional IS NOT NULL THEN
     IF NOT EXISTS(SELECT 1 FROM Profesional WHERE idProfesional = p_idProfesional) THEN
-      SELECT 'Error: profesional no existe' AS resultado;
-      LEAVE crear;
+      SELECT 'ERROR: profesional no existe' AS resultado;
+      LEAVE proc;
     END IF;
     IF EXISTS(SELECT 1 FROM Usuario WHERE idProfesional = p_idProfesional) THEN
-      SELECT 'Error: profesional ya vinculado a otro usuario' AS resultado;
-      LEAVE crear;
+      SELECT 'ERROR: profesional ya vinculado' AS resultado;
+      LEAVE proc;
     END IF;
   END IF;
 
-  INSERT INTO Usuario(usuario, password, idRol, idPaciente, idProfesional)
-  VALUES (p_usuario, SHA2(p_password,256), p_idRol, p_idPaciente, p_idProfesional);
-END crear //
+
+  INSERT INTO Usuario(usuario, password, displayNombre, idRol, idPaciente, idProfesional)
+  VALUES (p_usuario, SHA2(p_password,256), p_displayNombre, p_idRol, p_idPaciente, p_idProfesional);
+
+  SELECT LAST_INSERT_ID() AS nuevo_id;
+END proc;
+//
+
 DELIMITER ;
+
 
 -- REGISTRAR PACIENTE EN APP
 
@@ -304,11 +323,15 @@ BEGIN
         u.usuario,
         u.idRol,
         r.nombre AS rol,
-        u.idPaciente,
-        u.idProfesional,
-        -- Prioriza Paciente, luego Profesional, y si ambos son NULL, usa los datos de Usuario
-        COALESCE(p.nombre, pr.nombre, u.nombre) AS nombre,
-        COALESCE(p.apellido, pr.apellido, u.apellido) AS apellido
+        
+		COALESCE(u.idPaciente, 0) AS idPaciente,
+        COALESCE(u.idProfesional, 0) AS idProfesional,
+        -- displayNombre: prioriza Paciente, luego Profesional, luego el displayNombre del usuario
+        COALESCE(
+            NULLIF(CONCAT_WS(' ', p.nombre, p.apellido), ''), 
+            NULLIF(CONCAT_WS(' ', pr.nombre, pr.apellido), ''), 
+            NULLIF(u.displayNombre, '')
+        ) AS displayNombre
     FROM Usuario u
     JOIN Rol r ON u.idRol = r.idRol
     LEFT JOIN Paciente p ON u.idPaciente = p.idPaciente
@@ -318,6 +341,7 @@ BEGIN
     LIMIT 1;
 END //
 DELIMITER ;
+
 
 -- AGREGAR PACIENTE
 
@@ -588,14 +612,14 @@ INSERT INTO RolPantalla (idRol, pantalla) VALUES
 (7, 'Dashboard'), (7, 'Estudios'), (7, 'Insumos'), (7, 'Comprobantes');
 
 -- Usuarios (contraseña en texto simple solo para pruebas; en la app real va con hash)
-INSERT INTO Usuario (usuario, password, idRol, idPaciente, idProfesional) VALUES
-('jperez', SHA2('1234',256), 1, 1, NULL),
-('recepcion', SHA2('1234',256), 2, NULL, NULL),
-('mgomez', SHA2('1234',256), 3, NULL, 1),
-('agarcia', SHA2('1234',256), 4, NULL, NULL),
-('guardia_internacion', SHA2('1234',256), 5, NULL, NULL),
-('laboratorio', SHA2('1234',256), 6, NULL, NULL),
-('asistencial', SHA2('1234',256), 7, NULL, NULL);
+INSERT INTO Usuario (usuario, password, displayNombre, idRol, idPaciente, idProfesional) VALUES
+('jperez', SHA2('1234',256), 'Juan Pérez', 1, 1, NULL),
+('recepcion', SHA2('1234',256), 'Recepcion', 2, NULL, NULL),
+('mgomez', SHA2('1234',256), 'María Gómez', 3, NULL, 1),
+('agarcia', SHA2('1234',256), 'Agarcia', 4, NULL, NULL),
+('guardia_internacion', SHA2('1234',256), 'Guardia Internacion', 5, NULL, NULL),
+('laboratorio', SHA2('1234',256), 'Laboratorio', 6, NULL, NULL),
+('asistencial', SHA2('1234',256), 'Asistencial', 7, NULL, NULL);
 
 -- Turnos de consultorio
 INSERT INTO Turno (idTurno, idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado) VALUES
@@ -706,7 +730,6 @@ INSERT INTO Factura (nroComprobante, idPaciente, idTurno, idTurnoEstudio, fechaE
 ('0001-00000004', 1, NULL, 1, '2026-10-11 09:50:00', 'Ecografía abdominal', 30000.00, 'Tarjeta', 'Pagada'),
 ('0001-00000005', 4, 4, NULL, '2026-10-13 10:00:00', 'Consulta Neurología', 28000.00, 'Efectivo', 'Anulada');
 
-
 -- =====================================================
 --  CONSULTAS DE PRUEBA
 -- =====================================================
@@ -768,11 +791,3 @@ SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
-
-ALTER TABLE Usuario 
-ADD COLUMN nombre VARCHAR(100) AFTER password,
-ADD COLUMN apellido VARCHAR(100) AFTER nombre;
-
-UPDATE Usuario 
-SET nombre = 'Andrea', apellido = 'García' 
-WHERE usuario = 'agarcia';
