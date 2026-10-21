@@ -114,11 +114,9 @@ namespace ClinicaSePrise.Vistas
                     cancel: "Entendido");
             }
         }
-
-        private void MostrarError(string mensaje)
+        private async void OnCrearCuentaTapped(object sender, EventArgs e)
         {
-            LblError.Text = mensaje;
-            FrameError.IsVisible = true;
+            await DisplayAlert("Crear cuenta", "Funcionalidad en desarrollo.", "Entendido");
         }
     }
 }
