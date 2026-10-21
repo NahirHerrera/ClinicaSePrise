@@ -6,18 +6,17 @@
              BackgroundColor="#F8FAFC">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión" 
-                  Clicked="OnCerrarSesionClicked" 
-                  Order="Primary" />
+        <ToolbarItem Text="🚪 Cerrar Sesión"
+                     Clicked="OnCerrarSesionClicked"
+                     Order="Primary" />
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
         <!-- Fila 0: Saludo y título superior -->
         <VerticalStackLayout Grid.Row="0" Spacing="5">
-            <!-- Label para el saludo dinámico -->
-            <Label x:Name="lblBienvenida" 
-                   FontSize="14" 
-                   TextColor="Gray" 
+            <Label x:Name="lblBienvenida"
+                   FontSize="14"
+                   TextColor="Gray"
                    FontAttributes="Bold" />
 
             <Label Text="Consultorio Médico" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
@@ -25,16 +24,22 @@
 
         <!-- Fila 1: Contenido principal (Columnas) -->
         <Grid Grid.Row="1" ColumnDefinitions="300,*" ColumnSpacing="20">
+
             <!-- Lista de Pacientes citados hoy -->
             <Frame Grid.Column="0" Padding="10" CornerRadius="10">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Pacientes de Hoy" FontSize="18" FontAttributes="Bold"/>
-                    <CollectionView x:Name="cvPacientesHoy">
+                    <Label x:Name="lblSinPacientes" Text="No hay pacientes citados para hoy."
+                           TextColor="Gray" FontSize="12" IsVisible="False"/>
+                    <CollectionView x:Name="cvPacientesHoy"
+                                    SelectionMode="Single"
+                                    SelectionChanged="OnPacienteSeleccionado">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Margin="0,2" Padding="8" BorderColor="#CBD5E1">
                                     <VerticalStackLayout>
                                         <Label Text="{Binding NombrePaciente}" FontAttributes="Bold"/>
+                                        <Label Text="{Binding Hora}" TextColor="Gray" FontSize="12"/>
                                         <Label Text="{Binding Estado}" TextColor="#2563EB" FontSize="12"/>
                                     </VerticalStackLayout>
                                 </Frame>
@@ -44,18 +49,61 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Registro de Atención e Historia Clínica -->
+            <!-- Historia clínica + Registro de atención -->
             <Frame Grid.Column="1" Padding="15" CornerRadius="10">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Atención Médica - Historia Clínica" FontSize="20" FontAttributes="Bold" TextColor="#0F172A"/>
-                    <Editor Placeholder="Escriba aquí la evolución clínica, síntomas, diagnóstico..." HeightRequest="120"/>
-                    <Editor Placeholder="Indicaciones médicas / Recetario / Estudios solicitados..." HeightRequest="100"/>
-                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <CheckBox x:Name="chkNuevoTurno"/>
-                        <Label Text="Indica nuevo turno de control" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                    <Button Text="Finalizar Consulta y Guardar Atención" BackgroundColor="#2563EB" TextColor="White" Clicked="OnFinalizarConsultaClicked"/>
-                </VerticalStackLayout>
+                <ScrollView>
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label x:Name="lblPacienteActual"
+                               Text="Seleccione un paciente de la lista"
+                               FontSize="20" FontAttributes="Bold" TextColor="#0F172A"/>
+                        <Label x:Name="lblDatosPaciente" FontSize="12" TextColor="Gray"/>
+
+                        <!-- Historia clínica previa -->
+                        <Label Text="Historia clínica (atenciones previas)"
+                               FontSize="16" FontAttributes="Bold" TextColor="#0F172A"/>
+                        <Label x:Name="lblSinHistoria"
+                               Text="Sin atenciones previas registradas."
+                               TextColor="Gray" FontSize="12" IsVisible="False"/>
+
+                        <VerticalStackLayout x:Name="layoutHistoria" Spacing="6">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Padding="10" BorderColor="#CBD5E1" BackgroundColor="#F1F5F9" CornerRadius="8">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding Titulo}" FontAttributes="Bold" TextColor="#0F172A"/>
+                                            <Label Text="{Binding Detalle}" FontSize="12" TextColor="Gray"/>
+                                            <Label Text="{Binding Evolucion}" FontSize="13"
+                                                   IsVisible="{Binding TieneEvolucion}"/>
+                                            <Label Text="{Binding Indicaciones}" FontSize="13" TextColor="#2563EB"
+                                                   IsVisible="{Binding TieneIndicaciones}"/>
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <BoxView HeightRequest="1" Color="#CBD5E1"/>
+
+                        <!-- Atención actual -->
+                        <Label Text="Atención actual" FontSize="16" FontAttributes="Bold" TextColor="#0F172A"/>
+                        <Editor x:Name="edEvolucion"
+                                Placeholder="Escriba aquí la evolución clínica, síntomas, diagnóstico..."
+                                HeightRequest="120"/>
+                        <Editor x:Name="edIndicaciones"
+                                Placeholder="Indicaciones médicas / Recetario / Estudios solicitados..."
+                                HeightRequest="100"/>
+                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                            <CheckBox x:Name="chkNuevoTurno"/>
+                            <Label Text="Indica nuevo turno de control" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Button x:Name="btnFinalizar"
+                                Text="Finalizar Consulta y Guardar Atención"
+                                BackgroundColor="#2563EB" TextColor="White"
+                                IsEnabled="False"
+                                Clicked="OnFinalizarConsultaClicked"/>
+                    </VerticalStackLayout>
+                </ScrollView>
             </Frame>
         </Grid>
     </Grid>

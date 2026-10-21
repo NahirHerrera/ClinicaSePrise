@@ -9,7 +9,7 @@ internal class Conexion
     private string servidor = "localhost";
     private string? puerto;
     private string? usuario;
-    private string? password;
+    private string? password = "1234";
     private string baseDatos = "ClinicaSePrise";
 
     // Variable estática de la clase Conexión

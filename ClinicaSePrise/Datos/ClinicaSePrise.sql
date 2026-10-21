@@ -1077,7 +1077,7 @@ ORDER BY t.fechaHora;
 SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
-WHERE i.stock <= i.stockMinimo;
+WHERE i.stock <= i.stockMinimo;paciente
 
 ALTER TABLE Usuario 
 ADD COLUMN nombre VARCHAR(100) AFTER password,
