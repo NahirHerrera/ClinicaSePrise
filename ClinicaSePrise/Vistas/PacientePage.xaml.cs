@@ -9,28 +9,6 @@ public partial class PacientePage : ContentPage
     public PacientePage()
     {
         InitializeComponent();
-
-        // Construcción del saludo dinámico con Nombre, Apellido y Rol
-        string nombreCompleto = $"{Sesion.Nombre} {Sesion.Apellido}".Trim();
-        string usuario = !string.IsNullOrEmpty(nombreCompleto) ? nombreCompleto : "Usuario";
-
-        if (!string.IsNullOrEmpty(Sesion.Rol))
-        {
-            lblBienvenida.Text = $"Bienvenido/a, {usuario} ({Sesion.Rol})";
-        }
-        else
-        {
-            lblBienvenida.Text = $"Bienvenido/a, {usuario}";
-        }
-
-        dpFecha.MinimumDate = DateTime.Today;
-        Loaded += async (_, _) =>
-        {
-            await CargarTurnos();
-            await CargarFacturas();
-            await CargarEstudios();
-            await CargarEspecialidades();
-        };
     }
 
     void OnCerrarSesionClicked(object sender, EventArgs e) => Window.Page = new LoginPage();
