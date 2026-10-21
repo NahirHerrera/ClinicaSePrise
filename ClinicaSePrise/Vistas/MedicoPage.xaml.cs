@@ -10,28 +10,6 @@ public partial class MedicoPage : ContentPage
     {
         InitializeComponent();
 
-        // --- LÓGICA DE SALUDO DINÁMICO ---
-        string nombreCompleto = $"{Sesion.Nombre} {Sesion.Apellido}".Trim();
-        string rolActual = Sesion.Rol?.Trim() ?? "";
-
-        bool esRolConNombre = rolActual.Equals("Paciente", StringComparison.OrdinalIgnoreCase) ||
-                              rolActual.Equals("Medico", StringComparison.OrdinalIgnoreCase) ||
-                              rolActual.Equals("Administracion", StringComparison.OrdinalIgnoreCase);
-
-        if (esRolConNombre)
-        {
-            string usuario = !string.IsNullOrEmpty(nombreCompleto) ? nombreCompleto : "Usuario";
-            lblBienvenida.Text = $"Bienvenido/a, {usuario} ({rolActual})";
-        }
-        else if (!string.IsNullOrEmpty(rolActual))
-        {
-            lblBienvenida.Text = $"Bienvenido/a, {rolActual}";
-        }
-        else
-        {
-            lblBienvenida.Text = "Bienvenido/a";
-        }
-        // ---------------------------------
     }
 
     private void OnFinalizarConsultaClicked(object sender, EventArgs e)
