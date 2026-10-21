@@ -82,27 +82,39 @@
                     </Border>
                 </VerticalStackLayout>
 
+                <!-- Campo de Contraseña -->
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Contraseña"
+           FontSize="13"
+           FontAttributes="Bold"
+           TextColor="#475569" />
 
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="Contraseña"
-                               FontSize="13"
-                               FontAttributes="Bold"
-                               TextColor="#475569" />
+                        <Border Stroke="#CBD5E1"
+            StrokeShape="RoundRectangle 10"
+            StrokeThickness="1"
+            Padding="12,0">
+                            <Entry x:Name="TxtPassword"
+               IsPassword="True"
+               Placeholder="••••••••"
+               PlaceholderColor="#94A3B8"
+               TextColor="#1E293B"
+               HeightRequest="42" />
+                        </Border>
 
-                    <Border Stroke="#CBD5E1"
-                                StrokeShape="RoundRectangle 10"
-                                StrokeThickness="1"
-                                Padding="12,0">
-                        <Entry x:Name="TxtPassword"
-                                   IsPassword="True"
-                                   Placeholder="••••••••"
-                                   PlaceholderColor="#94A3B8"
-                                   TextColor="#1E293B"
-                                   HeightRequest="42" />
-                    </Border>
-                </VerticalStackLayout>
+                        <!-- Enlace de recuperación limpio y alineado a la derecha -->
+                        <Label Text="¿Olvidaste tu contraseña?"
+           FontSize="12"
+           TextColor="#2563EB"
+           HorizontalOptions="End"
+           Margin="0,2,0,10">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnForgotPasswordTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </VerticalStackLayout>
 
 
+                    <!-- Botón de Ingreso -->
                 <Button x:Name="BtnIngresar"
                             Text="Ingresar al Sistema"
                             BackgroundColor="#2563EB"
