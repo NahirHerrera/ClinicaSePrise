@@ -114,9 +114,9 @@ namespace ClinicaSePrise.Vistas
                     cancel: "Entendido");
             }
         }
-        private async void OnCrearCuentaTapped(object sender, EventArgs e)
+        private void OnCrearCuentaTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Crear cuenta", "Funcionalidad en desarrollo.", "Entendido");
+            Window.Page = new RegistroPage();
         }
     }
 }

@@ -10,8 +10,13 @@ namespace ClinicaSePrise.Vistas
         {
             InitializeComponent();
             lblBienvenida.Text = $"Bienvenido/a, {Sesion.DisplayNombre}";
+            VistaStaff.IsVisible = Sesion.Rol != "Paciente";
+            VistaPaciente.IsVisible = Sesion.Rol == "Paciente";
+        }
 
-
+        public HomePage(Dashboard d) : this()
+        {
+            BindingContext = d;
         }
 
         private void OnNuevoTurno(object sender, EventArgs e)
