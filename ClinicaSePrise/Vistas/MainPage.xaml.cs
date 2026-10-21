@@ -7,7 +7,11 @@ namespace ClinicaSePrise.Vistas
 {
     public partial class MainPage : ContentPage
     {
-        static bool EsPaciente => (Sesion.Rol ?? "").ToLowerInvariant().Contains("paciente");
+        static string Rol => (Sesion.Rol ?? "").ToLowerInvariant();
+        static bool EsPaciente => Rol.Contains("paciente");
+        static bool EsLaboratorio => Rol.Contains("laboratorio");
+
+        static Page HomeSegunRol() => EsPaciente ? new PacientePage() : EsLaboratorio ? new LaboratorioPage() : new HomePage();
 
         public MainPage(Page? paginaInicial = null)
         {
@@ -15,7 +19,7 @@ namespace ClinicaSePrise.Vistas
             ConfigurarNavbar();
 
             if (paginaInicial != null)
-                SetContentFromPage(paginaInicial is HomePage && EsPaciente ? new PacientePage() : paginaInicial);
+                SetContentFromPage(paginaInicial is HomePage ? HomeSegunRol() : paginaInicial);
         }
 
         void ConfigurarNavbar()
@@ -23,7 +27,7 @@ namespace ClinicaSePrise.Vistas
             LblDisplayNombre.Text = Sesion.DisplayNombre ?? "";
             LblRol.Text = Sesion.Rol ?? "";
 
-            string rol = (Sesion.Rol ?? "").ToLowerInvariant();
+            string rol = Rol;
 
             BtnHome.IsVisible = rol.Contains("paciente") || rol.Contains("recepcion") || rol.Contains("médico") ||
                                 rol.Contains("laboratorio") || rol.Contains("asistencial") || rol.Contains("administracion");
@@ -32,10 +36,10 @@ namespace ClinicaSePrise.Vistas
             BtnMedico.IsVisible = rol.Contains("medico") || rol.Contains("médico");
             BtnAdministracion.IsVisible = rol.Contains("administracion");
             BtnGuardia.IsVisible = rol.Contains("guardia") || rol.Contains("internacion") || rol.Contains("administracion");
-            BtnLaboratorio.IsVisible = rol.Contains("laboratorio") || rol.Contains("administracion");
+            BtnLaboratorio.IsVisible = rol.Contains("administracion");
             BtnAsistencial.IsVisible = rol.Contains("asistencial") || rol.Contains("administracion");
 
-            BtnHome.Clicked += (_, __) => SetContentFromPage(EsPaciente ? new PacientePage() : new HomePage());
+            BtnHome.Clicked += (_, __) => SetContentFromPage(HomeSegunRol());
             BtnPaciente.Clicked += (_, __) => SetContentFromPage(new PacientePage());
             BtnRecepcion.Clicked += (_, __) => SetContentFromPage(new RecepcionPage());
             BtnMedico.Clicked += (_, __) => SetContentFromPage(new MedicoPage());
