@@ -9,6 +9,25 @@ public partial class PacientePage : ContentPage
     public PacientePage()
     {
         InitializeComponent();
+        dpFecha.MinimumDate = DateTime.Today;
+        _ = CargarTodo();
+    }
+
+    async Task CargarTodo()
+    {
+        await CargarEspecialidades();
+        await CargarTurnos();
+        await CargarFacturas();
+        await CargarEstudios();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await CargarEspecialidades();
+        await CargarTurnos();
+        await CargarFacturas();
+        await CargarEstudios();
     }
 
     void OnCerrarSesionClicked(object sender, EventArgs e) => Window.Page = new LoginPage();
@@ -113,6 +132,7 @@ public partial class PacientePage : ContentPage
         }
         catch (Exception ex) { await Window.Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
+
     async void Cancelar_Clicked(object sender, EventArgs e)
     {
         var t = (Turno)((Button)sender).BindingContext;
