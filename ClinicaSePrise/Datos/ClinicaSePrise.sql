@@ -848,6 +848,479 @@ DELIMITER ;
 -- CALL StockInsumos('Diagnóstico por imágenes');
 -- CALL ReponerInsumo(2, 10);
 
+-- =====================================================
+--  RECEPCIÓN Y ADMINISTRACIÓN
+--  Estados del turno: Pendiente -> Confirmado -> En espera (acreditado) -> Atendido
+--  Cancelado: lo cancela el paciente o Recepción por teléfono
+--  Ausente: el paciente no vino (lo marca Recepción)
+-- =====================================================
+
+-- Faltas de los médicos (las carga Administración)
+CREATE TABLE AusenciaProfesional (
+    idAusencia INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idProfesional INT NOT NULL,
+    fecha DATE NOT NULL,
+    motivo VARCHAR(100),
+    UNIQUE (idProfesional, fecha),
+    FOREIGN KEY (idProfesional) REFERENCES Profesional(idProfesional)
+);
+
+-- Llamados telefónicos de Recepción: confirmar un turno o contactar a quien faltó
+-- resultado: Confirmó / Canceló / No contestó / Contactado
+CREATE TABLE LlamadoPaciente (
+    idLlamado INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    idTurno INT NOT NULL,
+    fechaHora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    resultado VARCHAR(30) NOT NULL,
+    FOREIGN KEY (idTurno) REFERENCES Turno(idTurno)
+);
+
+-- Detalle de cada liquidación: lo facturado y el % que se le paga al médico
+ALTER TABLE Honorario
+ADD COLUMN montoFacturado DECIMAL(12,2) NULL AFTER cantidadPacientes,
+ADD COLUMN porcentaje DECIMAL(5,2) NULL AFTER montoFacturado,
+ADD COLUMN fechaLiquidacion DATETIME NULL;
+
+-- Obras sociales con convenio. alDia = 1 si le paga a la clínica, 0 si tiene deuda.
+-- Se relaciona con Paciente.obraSocial por el nombre.
+-- Si la obra social del paciente tiene deuda (o no tiene convenio), la consulta se cobra como particular.
+CREATE TABLE ObraSocial (
+    idObraSocial INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    alDia BOOLEAN NOT NULL DEFAULT 1
+);
+
+-- Con qué cobertura se cobró cada consulta: 'Particular' u 'Obra Social - <nombre>'
+ALTER TABLE Factura
+ADD COLUMN cobertura VARCHAR(100) NULL AFTER medioPago;
+
+DELIMITER //
+
+-- RECEPCIÓN: TURNOS DE HOY
+
+CREATE PROCEDURE RecepcionTurnosHoy()
+BEGIN
+  SELECT t.idTurno, t.fechaHora, t.estado,
+         CONCAT(p.nombre, ' ', p.apellido) AS paciente,
+         p.dni,
+         COALESCE(p.telefono, '') AS telefono,
+         COALESCE(p.modalidadCobertura, 'Particular') AS cobertura,
+         COALESCE(p.obraSocial, '') AS obraSocial,
+         CONCAT(pr.nombre, ' ', pr.apellido) AS profesional,
+         COALESCE(t.especialidad, pr.especialidad, '') AS especialidad,
+         COALESCE(pr.consultorioAsignado, '') AS consultorio,
+         CASE
+           WHEN COALESCE(p.modalidadCobertura, 'Particular') <> 'Obra Social' THEN 'Particular'
+           WHEN os.idObraSocial IS NULL THEN 'Sin convenio'
+           WHEN os.alDia THEN 'Al día'
+           ELSE 'Con deuda'
+         END AS estadoCobertura
+  FROM Turno t
+  JOIN Paciente p ON p.idPaciente = t.idPaciente
+  JOIN Profesional pr ON pr.idProfesional = t.idProfesional
+  LEFT JOIN ObraSocial os ON os.nombre = p.obraSocial
+  WHERE DATE(t.fechaHora) = CURDATE() AND t.estado <> 'Cancelado'
+  ORDER BY t.fechaHora;
+END //
+
+-- RECEPCIÓN: ACREDITAR (cobra, emite la factura y pasa al paciente a la sala de espera)
+-- Si viene por una obra social al día se factura a la obra social (el paciente paga el copago);
+-- si la obra social tiene deuda o no tiene convenio, se factura como particular
+
+CREATE PROCEDURE AcreditarTurno(
+  IN p_idTurno INT,
+  IN p_monto DECIMAL(12,2),
+  IN p_medioPago VARCHAR(30)
+)
+acreditar: BEGIN
+  DECLARE v_pac INT;
+  DECLARE v_estado VARCHAR(30);
+  DECLARE v_concepto VARCHAR(100);
+  DECLARE v_nro VARCHAR(20);
+  DECLARE v_cobertura VARCHAR(100);
+
+  SELECT t.idPaciente, t.estado, CONCAT('Consulta ', COALESCE(t.especialidad, pr.especialidad, '')),
+         IF(p.modalidadCobertura = 'Obra Social' AND os.alDia = 1, CONCAT('Obra Social - ', os.nombre), 'Particular')
+  INTO v_pac, v_estado, v_concepto, v_cobertura
+  FROM Turno t
+  JOIN Profesional pr ON pr.idProfesional = t.idProfesional
+  JOIN Paciente p ON p.idPaciente = t.idPaciente
+  LEFT JOIN ObraSocial os ON os.nombre = p.obraSocial
+  WHERE t.idTurno = p_idTurno AND DATE(t.fechaHora) = CURDATE();
+
+  IF v_pac IS NULL THEN
+    SELECT 'Error: el turno no existe o no es de hoy' AS mensaje;
+    LEAVE acreditar;
+  END IF;
+
+  IF v_estado NOT IN ('Pendiente', 'Confirmado') THEN
+    SELECT CONCAT('Error: el turno está ', LOWER(v_estado), ', no se puede acreditar') AS mensaje;
+    LEAVE acreditar;
+  END IF;
+
+  IF p_monto IS NULL OR p_monto < 0 THEN
+    SELECT 'Error: el monto no es válido' AS mensaje;
+    LEAVE acreditar;
+  END IF;
+
+  IF COALESCE(p_medioPago, '') = '' THEN
+    SELECT 'Error: falta el medio de pago' AS mensaje;
+    LEAVE acreditar;
+  END IF;
+
+  SELECT CONCAT('0001-', LPAD(COALESCE(MAX(CAST(SUBSTRING(nroComprobante, 6) AS UNSIGNED)), 0) + 1, 8, '0'))
+  INTO v_nro FROM Factura;
+
+  START TRANSACTION;
+  INSERT INTO Factura (nroComprobante, idPaciente, idTurno, fechaEmision, concepto, monto, medioPago, cobertura, estado)
+  VALUES (v_nro, v_pac, p_idTurno, NOW(), v_concepto, p_monto, p_medioPago, v_cobertura, 'Pagada');
+  UPDATE Turno SET estado = 'En espera' WHERE idTurno = p_idTurno;
+  COMMIT;
+
+  SELECT 'OK' AS mensaje, v_nro AS nroComprobante, v_concepto AS concepto,
+         p_monto AS monto, p_medioPago AS medioPago, NOW() AS fechaEmision, v_cobertura AS cobertura;
+END acreditar //
+
+-- RECEPCIÓN: EL PACIENTE NO VINO
+
+CREATE PROCEDURE MarcarAusente(IN p_idTurno INT)
+BEGIN
+  UPDATE Turno SET estado = 'Ausente'
+  WHERE idTurno = p_idTurno AND estado IN ('Pendiente', 'Confirmado') AND fechaHora < NOW();
+  SELECT ROW_COUNT() AS marcado;
+END //
+
+-- RECEPCIÓN: A QUIÉN HAY QUE LLAMAR
+-- Turnos pendientes de los próximos 3 días (para confirmar) y pacientes que faltaron
+-- en la última semana y todavía no fueron contactados
+
+CREATE PROCEDURE RecepcionLlamadosPendientes()
+BEGIN
+  SELECT t.idTurno,
+         IF(t.estado = 'Ausente', 'Faltó al turno', 'Confirmar turno') AS motivo,
+         t.fechaHora,
+         CONCAT(p.nombre, ' ', p.apellido) AS paciente,
+         COALESCE(p.telefono, '') AS telefono,
+         CONCAT(pr.nombre, ' ', pr.apellido) AS profesional,
+         COALESCE(t.especialidad, pr.especialidad, '') AS especialidad,
+         (SELECT COUNT(*) FROM LlamadoPaciente l WHERE l.idTurno = t.idTurno) AS intentos,
+         COALESCE((SELECT l.resultado FROM LlamadoPaciente l WHERE l.idTurno = t.idTurno
+                   ORDER BY l.fechaHora DESC, l.idLlamado DESC LIMIT 1), '') AS ultimoResultado
+  FROM Turno t
+  JOIN Paciente p ON p.idPaciente = t.idPaciente
+  JOIN Profesional pr ON pr.idProfesional = t.idProfesional
+  WHERE (t.estado = 'Pendiente' AND t.fechaHora > NOW()
+         AND t.fechaHora < DATE_ADD(CURDATE(), INTERVAL 4 DAY))
+     OR (t.estado = 'Ausente' AND t.fechaHora >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+         AND NOT EXISTS (SELECT 1 FROM LlamadoPaciente l
+                         WHERE l.idTurno = t.idTurno AND l.resultado = 'Contactado'))
+  ORDER BY t.estado = 'Ausente', t.fechaHora;
+END //
+
+-- RECEPCIÓN: ANOTAR EL RESULTADO DE UN LLAMADO
+
+CREATE PROCEDURE RegistrarLlamado(IN p_idTurno INT, IN p_resultado VARCHAR(30))
+llamado: BEGIN
+  DECLARE v_estado VARCHAR(30);
+
+  SELECT estado INTO v_estado FROM Turno WHERE idTurno = p_idTurno;
+
+  IF v_estado IS NULL THEN
+    SELECT 'Error: el turno no existe' AS mensaje;
+    LEAVE llamado;
+  END IF;
+
+  IF p_resultado NOT IN ('Confirmó', 'Canceló', 'No contestó', 'Contactado') THEN
+    SELECT 'Error: resultado de llamado no válido' AS mensaje;
+    LEAVE llamado;
+  END IF;
+
+  IF p_resultado IN ('Confirmó', 'Canceló') AND v_estado <> 'Pendiente' THEN
+    SELECT CONCAT('Error: el turno ya está ', LOWER(v_estado)) AS mensaje;
+    LEAVE llamado;
+  END IF;
+
+  START TRANSACTION;
+  INSERT INTO LlamadoPaciente (idTurno, resultado) VALUES (p_idTurno, p_resultado);
+  IF p_resultado = 'Confirmó' THEN
+    UPDATE Turno SET estado = 'Confirmado' WHERE idTurno = p_idTurno;
+  ELSEIF p_resultado = 'Canceló' THEN
+    UPDATE Turno SET estado = 'Cancelado' WHERE idTurno = p_idTurno;
+  END IF;
+  COMMIT;
+
+  SELECT 'OK' AS mensaje;
+END llamado //
+
+-- ADMINISTRACIÓN: LO FACTURADO POR LAS CONSULTAS DE UN MÉDICO EN UN MES
+-- (facturas pagadas de sus turnos; es la base para liquidar honorarios)
+
+CREATE FUNCTION FacturadoProfesional(p_idProfesional INT, p_anio INT, p_mes INT)
+RETURNS DECIMAL(12,2)
+READS SQL DATA
+BEGIN
+  RETURN (SELECT COALESCE(SUM(f.monto), 0)
+          FROM Factura f
+          JOIN Turno t ON t.idTurno = f.idTurno
+          WHERE t.idProfesional = p_idProfesional AND f.estado = 'Pagada'
+            AND YEAR(f.fechaEmision) = p_anio AND MONTH(f.fechaEmision) = p_mes);
+END //
+
+-- ADMINISTRACIÓN: PACIENTES ATENDIDOS POR UN MÉDICO EN UN MES
+
+CREATE FUNCTION AtencionesProfesional(p_idProfesional INT, p_anio INT, p_mes INT)
+RETURNS INT
+READS SQL DATA
+BEGIN
+  RETURN (SELECT COUNT(*) FROM Atencion
+          WHERE idProfesional = p_idProfesional
+            AND YEAR(fechaHoraFin) = p_anio AND MONTH(fechaHoraFin) = p_mes);
+END //
+
+-- ADMINISTRACIÓN: LISTA DE MÉDICOS
+
+CREATE PROCEDURE ProfesionalesListado()
+BEGIN
+  SELECT idProfesional,
+         CONCAT(nombre, ' ', apellido, ' (', COALESCE(especialidad, 'sin especialidad'), ')') AS nombre
+  FROM Profesional
+  ORDER BY apellido, nombre;
+END //
+
+-- ADMINISTRACIÓN: CALCULAR HONORARIO (no guarda nada)
+
+CREATE PROCEDURE CalcularHonorario(
+  IN p_idProfesional INT,
+  IN p_anio INT,
+  IN p_mes INT,
+  IN p_porcentaje DECIMAL(5,2),
+  IN p_periodo VARCHAR(50)
+)
+BEGIN
+  SELECT x.facturado,
+         (SELECT COUNT(*) FROM Factura f
+          JOIN Turno t ON t.idTurno = f.idTurno
+          WHERE t.idProfesional = p_idProfesional AND f.estado = 'Pagada'
+            AND YEAR(f.fechaEmision) = p_anio AND MONTH(f.fechaEmision) = p_mes) AS facturas,
+         AtencionesProfesional(p_idProfesional, p_anio, p_mes) AS atenciones,
+         ROUND(x.facturado * p_porcentaje / 100, 2) AS honorario,
+         EXISTS (SELECT 1 FROM Honorario
+                 WHERE idProfesional = p_idProfesional AND periodoLiquidacion = p_periodo) AS yaLiquidado
+  FROM (SELECT FacturadoProfesional(p_idProfesional, p_anio, p_mes) AS facturado) x;
+END //
+
+-- ADMINISTRACIÓN: REGISTRAR LA LIQUIDACIÓN DE HONORARIOS
+
+CREATE PROCEDURE RegistrarLiquidacion(
+  IN p_idProfesional INT,
+  IN p_anio INT,
+  IN p_mes INT,
+  IN p_porcentaje DECIMAL(5,2),
+  IN p_periodo VARCHAR(50)
+)
+liquidar: BEGIN
+  DECLARE v_facturado DECIMAL(12,2);
+  DECLARE v_atenciones INT;
+  DECLARE v_monto DECIMAL(12,2);
+
+  IF NOT EXISTS (SELECT 1 FROM Profesional WHERE idProfesional = p_idProfesional) THEN
+    SELECT 'Error: el médico no existe' AS mensaje;
+    LEAVE liquidar;
+  END IF;
+
+  IF p_porcentaje IS NULL OR p_porcentaje <= 0 OR p_porcentaje > 100 THEN
+    SELECT 'Error: el porcentaje tiene que estar entre 1 y 100' AS mensaje;
+    LEAVE liquidar;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM Honorario
+             WHERE idProfesional = p_idProfesional AND periodoLiquidacion = p_periodo) THEN
+    SELECT 'Error: el médico ya tiene liquidado ese período' AS mensaje;
+    LEAVE liquidar;
+  END IF;
+
+  SET v_facturado = FacturadoProfesional(p_idProfesional, p_anio, p_mes);
+  SET v_atenciones = AtencionesProfesional(p_idProfesional, p_anio, p_mes);
+
+  IF v_facturado = 0 THEN
+    SELECT 'Error: el médico no tiene consultas cobradas en ese período' AS mensaje;
+    LEAVE liquidar;
+  END IF;
+
+  SET v_monto = ROUND(v_facturado * p_porcentaje / 100, 2);
+
+  INSERT INTO Honorario (idProfesional, periodoLiquidacion, cantidadPacientes, montoFacturado, porcentaje, monto, fechaLiquidacion)
+  VALUES (p_idProfesional, p_periodo, v_atenciones, v_facturado, p_porcentaje, v_monto, NOW());
+
+  SELECT 'OK' AS mensaje, LAST_INSERT_ID() AS idHonorario, v_facturado AS facturado,
+         v_atenciones AS atenciones, v_monto AS monto, NOW() AS fechaLiquidacion;
+END liquidar //
+
+-- ADMINISTRACIÓN: LIQUIDACIONES DE UN PERÍODO
+
+CREATE PROCEDURE HonorariosLiquidados(IN p_periodo VARCHAR(50))
+BEGIN
+  SELECT CONCAT(pr.nombre, ' ', pr.apellido) AS profesional,
+         COALESCE(h.cantidadPacientes, 0) AS pacientes,
+         h.montoFacturado,
+         h.porcentaje,
+         COALESCE(h.monto, 0) AS monto
+  FROM Honorario h
+  JOIN Profesional pr ON pr.idProfesional = h.idProfesional
+  WHERE h.periodoLiquidacion = p_periodo
+  ORDER BY pr.apellido, pr.nombre;
+END //
+
+-- ADMINISTRACIÓN: NÚMEROS DEL MES (tarjetas del panel)
+
+CREATE PROCEDURE AdminResumen(IN p_anio INT, IN p_mes INT)
+BEGIN
+  SELECT
+    (SELECT COALESCE(SUM(monto), 0) FROM Factura
+     WHERE estado = 'Pagada' AND YEAR(fechaEmision) = p_anio AND MONTH(fechaEmision) = p_mes) AS facturado,
+    (SELECT COUNT(*) FROM Atencion
+     WHERE YEAR(fechaHoraFin) = p_anio AND MONTH(fechaHoraFin) = p_mes) AS atenciones,
+    (SELECT COUNT(*) FROM Turno
+     WHERE estado <> 'Cancelado' AND YEAR(fechaHora) = p_anio AND MONTH(fechaHora) = p_mes) AS turnos,
+    (SELECT COUNT(*) FROM Turno
+     WHERE estado = 'Atendido' AND YEAR(fechaHora) = p_anio AND MONTH(fechaHora) = p_mes) AS turnosAtendidos,
+    (SELECT COUNT(*) FROM Turno
+     WHERE estado = 'Ausente' AND YEAR(fechaHora) = p_anio AND MONTH(fechaHora) = p_mes) AS ausentes,
+    (SELECT COUNT(*) FROM AusenciaProfesional
+     WHERE YEAR(fecha) = p_anio AND MONTH(fecha) = p_mes) AS faltasMedicos,
+    (SELECT COUNT(*) FROM Insumo WHERE stock <= stockMinimo) AS insumosCriticos;
+END //
+
+-- ADMINISTRACIÓN: NÚMEROS DEL MES POR MÉDICO (gráficos)
+
+CREATE PROCEDURE AdminPorProfesional(IN p_anio INT, IN p_mes INT)
+BEGIN
+  SELECT pr.idProfesional,
+         CONCAT(LEFT(pr.nombre, 1), '. ', pr.apellido) AS nombre,
+         (SELECT COUNT(*) FROM Turno t
+          WHERE t.idProfesional = pr.idProfesional AND t.estado <> 'Cancelado'
+            AND YEAR(t.fechaHora) = p_anio AND MONTH(t.fechaHora) = p_mes) AS turnos,
+         AtencionesProfesional(pr.idProfesional, p_anio, p_mes) AS atendidos,
+         (SELECT COUNT(*) FROM Turno t
+          WHERE t.idProfesional = pr.idProfesional AND t.estado = 'Ausente'
+            AND YEAR(t.fechaHora) = p_anio AND MONTH(t.fechaHora) = p_mes) AS ausentes,
+         FacturadoProfesional(pr.idProfesional, p_anio, p_mes) AS facturado,
+         (SELECT COUNT(*) FROM AusenciaProfesional a
+          WHERE a.idProfesional = pr.idProfesional
+            AND YEAR(a.fecha) = p_anio AND MONTH(a.fecha) = p_mes) AS faltas
+  FROM Profesional pr
+  ORDER BY pr.apellido;
+END //
+
+-- ADMINISTRACIÓN: TURNOS DEL MES POR ESTADO
+
+CREATE PROCEDURE AdminTurnosPorEstado(IN p_anio INT, IN p_mes INT)
+BEGIN
+  SELECT estado, COUNT(*) AS cantidad
+  FROM Turno
+  WHERE YEAR(fechaHora) = p_anio AND MONTH(fechaHora) = p_mes
+  GROUP BY estado
+  ORDER BY cantidad DESC;
+END //
+
+-- ADMINISTRACIÓN: REGISTRAR LA FALTA DE UN MÉDICO
+-- Devuelve cuántos turnos tenía ese día (habría que reprogramarlos)
+
+CREATE PROCEDURE RegistrarAusenciaProfesional(
+  IN p_idProfesional INT,
+  IN p_fecha DATE,
+  IN p_motivo VARCHAR(100)
+)
+falta: BEGIN
+  IF NOT EXISTS (SELECT 1 FROM Profesional WHERE idProfesional = p_idProfesional) THEN
+    SELECT 'Error: el médico no existe' AS mensaje;
+    LEAVE falta;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM AusenciaProfesional
+             WHERE idProfesional = p_idProfesional AND fecha = p_fecha) THEN
+    SELECT 'Error: esa falta ya está registrada' AS mensaje;
+    LEAVE falta;
+  END IF;
+
+  INSERT INTO AusenciaProfesional (idProfesional, fecha, motivo)
+  VALUES (p_idProfesional, p_fecha, NULLIF(TRIM(p_motivo), ''));
+
+  SELECT 'OK' AS mensaje,
+         (SELECT COUNT(*) FROM Turno
+          WHERE idProfesional = p_idProfesional AND DATE(fechaHora) = p_fecha
+            AND estado IN ('Pendiente', 'Confirmado')) AS turnosAfectados;
+END falta //
+
+-- ADMINISTRACIÓN: FALTAS DE MÉDICOS DE UN MES
+
+CREATE PROCEDURE AusenciasProfesionales(IN p_anio INT, IN p_mes INT)
+BEGIN
+  SELECT a.fecha,
+         CONCAT(pr.nombre, ' ', pr.apellido) AS profesional,
+         COALESCE(a.motivo, '') AS motivo
+  FROM AusenciaProfesional a
+  JOIN Profesional pr ON pr.idProfesional = a.idProfesional
+  WHERE YEAR(a.fecha) = p_anio AND MONTH(a.fecha) = p_mes
+  ORDER BY a.fecha DESC;
+END //
+
+-- ADMINISTRACIÓN: DETALLE DE LO QUE SE LIQUIDA A UN MÉDICO
+-- Cada consulta cobrada en el mes y el estado del turno: "Atendido" lo marca el médico
+-- al finalizar la consulta en su pantalla (y ahí también registra la Atención)
+
+CREATE PROCEDURE DetalleHonorario(IN p_idProfesional INT, IN p_anio INT, IN p_mes INT)
+BEGIN
+  SELECT f.fechaEmision,
+         CONCAT(p.nombre, ' ', p.apellido) AS paciente,
+         f.monto,
+         COALESCE(f.medioPago, '') AS medioPago,
+         t.estado
+  FROM Factura f
+  JOIN Turno t ON t.idTurno = f.idTurno
+  JOIN Paciente p ON p.idPaciente = f.idPaciente
+  WHERE t.idProfesional = p_idProfesional AND f.estado = 'Pagada'
+    AND YEAR(f.fechaEmision) = p_anio AND MONTH(f.fechaEmision) = p_mes
+  ORDER BY f.fechaEmision;
+END //
+
+-- ADMINISTRACIÓN: OBRAS SOCIALES CON CONVENIO
+
+CREATE PROCEDURE ObrasSociales()
+BEGIN
+  SELECT os.idObraSocial, os.nombre, os.alDia,
+         (SELECT COUNT(*) FROM Paciente p WHERE p.obraSocial = os.nombre) AS pacientes
+  FROM ObraSocial os
+  ORDER BY os.nombre;
+END //
+
+-- ADMINISTRACIÓN: MARCAR UNA OBRA SOCIAL AL DÍA O CON DEUDA
+
+CREATE PROCEDURE CambiarEstadoObraSocial(IN p_idObraSocial INT, IN p_alDia BOOLEAN)
+BEGIN
+  UPDATE ObraSocial SET alDia = p_alDia WHERE idObraSocial = p_idObraSocial;
+  SELECT ROW_COUNT() AS cambiada;
+END //
+
+-- ADMINISTRACIÓN: AGREGAR UNA OBRA SOCIAL CON CONVENIO (arranca al día)
+
+CREATE PROCEDURE AgregarObraSocial(IN p_nombre VARCHAR(100))
+agregar: BEGIN
+  IF COALESCE(TRIM(p_nombre), '') = '' THEN
+    SELECT 'Error: falta el nombre de la obra social' AS mensaje;
+    LEAVE agregar;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM ObraSocial WHERE nombre = TRIM(p_nombre)) THEN
+    SELECT 'Error: esa obra social ya está cargada' AS mensaje;
+    LEAVE agregar;
+  END IF;
+
+  INSERT INTO ObraSocial (nombre) VALUES (TRIM(p_nombre));
+  SELECT 'OK' AS mensaje;
+END agregar //
+
+DELIMITER ;
 
 -- =====================================================
 --  DATOS DE PRUEBA
@@ -1066,6 +1539,69 @@ INSERT INTO Factura (nroComprobante, idPaciente, idTurno, idTurnoEstudio, fechaE
 INSERT INTO Factura (nroComprobante, idPaciente, idOrdenLab, fechaEmision, concepto, monto, medioPago, estado) VALUES
 ('0001-00000006', 2, 1, NOW(), 'Laboratorio', 12000.00, 'Efectivo', 'Pagada'),
 ('0001-00000007', 3, 2, NOW(), 'Laboratorio', 9000.00, 'Tarjeta', 'Pagada');
+
+-- Datos de prueba de Recepción y Administración
+-- (fechas relativas a hoy, para que los gráficos y los llamados siempre tengan algo)
+
+-- Turnos de los últimos días: atendidos, ausentes y un cancelado
+INSERT INTO Turno (idTurno, idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado) VALUES
+(20, 2, 1, 'Cardiología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:30:00'), 'Normal', 30, 'App', 'Atendido'),
+(21, 3, 1, 'Cardiología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 5 DAY), '10:00:00'), 'Normal', 30, 'Sistema', 'Atendido'),
+(22, 5, 2, 'Pediatría', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '11:00:00'), 'Normal', 30, 'App', 'Atendido'),
+(23, 4, 3, 'Dermatología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 4 DAY), '15:30:00'), 'Normal', 30, 'App', 'Atendido'),
+(24, 1, 3, 'Dermatología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 6 DAY), '16:00:00'), 'Normal', 30, 'Sistema', 'Atendido'),
+(25, 2, 6, 'Fisioterapia', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '14:30:00'), 'Fisio-Kinesiología', 30, 'App', 'Atendido'),
+(26, 3, 8, 'Psicología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:45:00'), 'Salud Mental', 45, 'App', 'Atendido'),
+(27, 5, 9, 'Psiquiatría', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '14:00:00'), 'Salud Mental', 30, 'Sistema', 'Atendido'),
+(28, 4, 1, 'Cardiología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '11:00:00'), 'Normal', 30, 'App', 'Ausente'),
+(29, 1, 2, 'Pediatría', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '12:00:00'), 'Normal', 30, 'App', 'Ausente'),
+(30, 3, 5, 'Traumatología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 4 DAY), '09:00:00'), 'Normal', 35, 'Sistema', 'Ausente'),
+(31, 5, 4, 'Neurología', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '10:00:00'), 'Normal', 40, 'App', 'Cancelado');
+
+-- Turnos de los próximos días sin confirmar (Recepción los llama) y uno de hoy temprano
+INSERT INTO Turno (idTurno, idPaciente, idProfesional, especialidad, fechaHora, tipoTurno, duracion, modalidadSolicitud, estado) VALUES
+(32, 2, 4, 'Neurología', TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '09:40:00'), 'Normal', 40, 'App', 'Pendiente'),
+(33, 5, 1, 'Cardiología', TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '10:30:00'), 'Normal', 30, 'App', 'Pendiente'),
+(34, 3, 7, 'Kinesiología', TIMESTAMP(DATE_ADD(CURDATE(), INTERVAL 3 DAY), '08:30:00'), 'Fisio-Kinesiología', 30, 'Sistema', 'Pendiente'),
+(35, 5, 5, 'Traumatología', TIMESTAMP(CURDATE(), '08:15:00'), 'Normal', 35, 'App', 'Pendiente'),
+-- Turno de hoy con María Gómez (usuario mgomez) para probar Recepción -> Médico -> Administración
+(36, 3, 1, 'Cardiología', TIMESTAMP(CURDATE(), '12:00:00'), 'Normal', 30, 'App', 'Confirmado');
+
+INSERT INTO Factura (nroComprobante, idPaciente, idTurno, fechaEmision, concepto, monto, medioPago, estado) VALUES
+('0001-00000008', 2, 20, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:20:00'), 'Consulta Cardiología', 25000.00, 'Efectivo', 'Pagada'),
+('0001-00000009', 3, 21, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 5 DAY), '09:50:00'), 'Consulta Cardiología', 25000.00, 'Tarjeta', 'Pagada'),
+('0001-00000010', 5, 22, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '10:50:00'), 'Consulta Pediatría', 18000.00, 'Transferencia', 'Pagada'),
+('0001-00000011', 4, 23, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 4 DAY), '15:20:00'), 'Consulta Dermatología', 22000.00, 'Tarjeta', 'Pagada'),
+('0001-00000012', 1, 24, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 6 DAY), '15:50:00'), 'Consulta Dermatología', 22000.00, 'Efectivo', 'Pagada'),
+('0001-00000013', 2, 25, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '14:20:00'), 'Consulta Fisioterapia', 15000.00, 'Efectivo', 'Pagada'),
+('0001-00000014', 3, 26, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '09:35:00'), 'Consulta Psicología', 20000.00, 'Transferencia', 'Pagada'),
+('0001-00000015', 5, 27, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '13:50:00'), 'Consulta Psiquiatría', 30000.00, 'Tarjeta', 'Pagada');
+
+INSERT INTO Atencion (idPaciente, idProfesional, fechaHoraFin, indicacionNuevoTurno) VALUES
+(2, 1, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '10:00:00'), 0),
+(3, 1, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 5 DAY), '10:30:00'), 1),
+(5, 2, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '11:30:00'), 0),
+(4, 3, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 4 DAY), '16:00:00'), 0),
+(1, 3, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 6 DAY), '16:30:00'), 1),
+(2, 6, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '15:00:00'), 1),
+(3, 8, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '10:30:00'), 1),
+(5, 9, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 3 DAY), '14:30:00'), 0);
+
+INSERT INTO AusenciaProfesional (idProfesional, fecha, motivo) VALUES
+(4, DATE_SUB(CURDATE(), INTERVAL 8 DAY), 'Licencia por enfermedad'),
+(4, DATE_SUB(CURDATE(), INTERVAL 7 DAY), 'Licencia por enfermedad'),
+(2, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Congreso de pediatría');
+
+INSERT INTO LlamadoPaciente (idTurno, fechaHora, resultado) VALUES
+(33, DATE_SUB(NOW(), INTERVAL 2 HOUR), 'No contestó');
+
+-- Obras sociales con convenio: IOMA y Galeno tienen deuda con la clínica
+INSERT INTO ObraSocial (nombre, alDia) VALUES
+('OSDE', 1), ('Swiss Medical', 1), ('PAMI', 1), ('IOMA', 0), ('Galeno', 0);
+
+-- Los pacientes de prueba que vienen por obra social: Ana con OSDE (al día) y Lucía con IOMA (con deuda)
+UPDATE Paciente SET obraSocial = 'OSDE', nroAfiliado = '61-123456-01' WHERE idPaciente = 2;
+UPDATE Paciente SET obraSocial = 'IOMA', nroAfiliado = 'IO-778899' WHERE idPaciente = 4;
 
 
 -- =====================================================

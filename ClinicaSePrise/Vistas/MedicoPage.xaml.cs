@@ -24,12 +24,8 @@ public partial class MedicoPage : ContentPage
     {
         InitializeComponent();
 
-    }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await CargarPacientesHoy();
+        // La vista se muestra dentro de MainPage y OnAppearing no se dispara: cargamos acá
+        _ = CargarPacientesHoy();
     }
 
     // ================== PACIENTES DE HOY ==================
@@ -72,7 +68,7 @@ public partial class MedicoPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Error", $"No se pudieron cargar los pacientes: {ex.Message}", "OK");
+            await Avisos.Mostrar("Error", $"No se pudieron cargar los pacientes: {ex.Message}");
         }
 
         cvPacientesHoy.ItemsSource = lista;
@@ -133,7 +129,7 @@ public partial class MedicoPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Error", $"No se pudo cargar la historia: {ex.Message}", "OK");
+            await Avisos.Mostrar("Error", $"No se pudo cargar la historia: {ex.Message}");
         }
 
         BindableLayout.SetItemsSource(layoutHistoria, historia);
@@ -145,17 +141,17 @@ public partial class MedicoPage : ContentPage
     {
         if (_seleccionado == null)
         {
-            await DisplayAlert("Atención", "Seleccione un paciente primero.", "OK");
+            await Avisos.Mostrar("Atención", "Seleccione un paciente primero.");
             return;
         }
         if (_seleccionado.Estado == "Atendido")
         {
-            await DisplayAlert("Atención", "Este paciente ya fue atendido.", "OK");
+            await Avisos.Mostrar("Atención", "Este paciente ya fue atendido.");
             return;
         }
         if (string.IsNullOrWhiteSpace(edEvolucion.Text))
         {
-            await DisplayAlert("Atención", "Cargue la evolución clínica antes de finalizar.", "OK");
+            await Avisos.Mostrar("Atención", "Cargue la evolución clínica antes de finalizar.");
             return;
         }
 
@@ -199,7 +195,7 @@ public partial class MedicoPage : ContentPage
             });
             File.WriteAllText(RutaNotas, JsonSerializer.Serialize(notas));
 
-            await DisplayAlert("Listo", "Atención guardada.", "OK");
+            await Avisos.Mostrar("Listo", "Atención guardada.");
 
             int idPacienteActual = _seleccionado.IdPaciente;
             await CargarPacientesHoy();
@@ -210,7 +206,7 @@ public partial class MedicoPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Error", $"No se pudo guardar la atención: {ex.Message}", "OK");
+            await Avisos.Mostrar("Error", $"No se pudo guardar la atención: {ex.Message}");
         }
     }
 

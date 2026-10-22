@@ -1,63 +1,214 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ent="clr-namespace:ClinicaSePrise.Entidades"
              x:Class="ClinicaSePrise.Vistas.RecepcionPage"
              Title="Recepción y Acreditación"
              BackgroundColor="#F8FAFC">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión" 
-                     Clicked="OnCerrarSesionClicked" 
+        <ToolbarItem Text="🚪 Cerrar Sesión"
+                     Clicked="OnCerrarSesionClicked"
                      Order="Primary" />
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
-        <VerticalStackLayout Grid.Row="0" Spacing="5">
-            <!-- Label para el saludo dinámico -->
-            <Label x:Name="lblBienvenida" 
-                   FontSize="14" 
-                   TextColor="Gray" 
-                   FontAttributes="Bold" />
+    <ContentPage.Resources>
+        <Style x:Key="Tarjeta" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="#E2E8F0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style x:Key="Titulo" TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#1E293B" />
+        </Style>
+        <Style x:Key="Ayuda" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextColor" Value="#64748B" />
+        </Style>
+        <Style x:Key="Etiqueta" TargetType="Border">
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+        </Style>
+        <Style x:Key="BotonChico" TargetType="Button">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="HeightRequest" Value="32" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+    </ContentPage.Resources>
 
-            <Label Text="Gestión de Recepción" FontSize="22" FontAttributes="Bold" TextColor="#1E293B"/>
-            <SearchBar Placeholder="Buscar paciente por DNI o Nombre..." x:Name="sbPaciente" />
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Encabezado -->
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="4">
+                    <Label x:Name="lblBienvenida" FontSize="14" TextColor="Gray" FontAttributes="Bold" />
+                    <Label Text="Gestión de Recepción" FontSize="22" FontAttributes="Bold" TextColor="#1E293B" />
+                    <Label x:Name="lblFecha" Style="{StaticResource Ayuda}" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" Text="↻ Actualizar" Clicked="OnActualizar" VerticalOptions="Center"
+                        BackgroundColor="White" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1" CornerRadius="10" />
+            </Grid>
+
+            <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+
+                <!-- Turnos de hoy -->
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="📋 Turnos de hoy" Style="{StaticResource Titulo}" />
+                        <Label Text="Elegí un turno para acreditar al paciente cuando llega, o marcarlo ausente si no vino."
+                               Style="{StaticResource Ayuda}" />
+                        <SearchBar x:Name="sbPaciente" Placeholder="Buscar paciente por DNI o nombre..."
+                                   TextChanged="OnBuscar" />
+                        <CollectionView x:Name="cvTurnosHoy" SelectionMode="Single" HeightRequest="330"
+                                        SelectionChanged="OnTurnoSeleccionado">
+                            <CollectionView.EmptyView>
+                                <Label Text="No hay turnos para hoy" Style="{StaticResource Ayuda}"
+                                       HorizontalOptions="Center" Margin="0,20" />
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="ent:TurnoRecepcion">
+                                    <Grid ColumnDefinitions="56,*,*,Auto" ColumnSpacing="10" Padding="8,10">
+                                        <Label Text="{Binding Hora}" FontAttributes="Bold" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding Paciente}" FontAttributes="Bold" />
+                                            <Label Text="{Binding DniTxt}" Style="{StaticResource Ayuda}" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Profesional}" />
+                                            <Label Text="{Binding Lugar}" Style="{StaticResource Ayuda}" />
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="3" Style="{StaticResource Etiqueta}"
+                                                BackgroundColor="{Binding ColorFondoEstado}">
+                                            <Label Text="{Binding Estado}" TextColor="{Binding ColorEstado}"
+                                                   FontSize="12" FontAttributes="Bold" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Acreditar y cobrar -->
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="✅ Acreditar y cobrar" Style="{StaticResource Titulo}" />
+                        <Label x:Name="lblSinSeleccion" Text="Elegí un turno de la lista de la izquierda."
+                               Style="{StaticResource Ayuda}" />
+
+                        <VerticalStackLayout x:Name="stAcreditar" IsVisible="False" Spacing="8">
+                            <Label x:Name="lblPacienteSel" FontSize="16" FontAttributes="Bold" TextColor="#1E293B" />
+                            <Label x:Name="lblTurnoSel" Style="{StaticResource Ayuda}" />
+                            <Label x:Name="lblCoberturaSel" FontSize="13" TextColor="#334155" />
+                            <Border x:Name="bdAvisoCobertura" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10,8">
+                                <Label x:Name="lblAvisoCobertura" FontSize="12" FontAttributes="Bold" />
+                            </Border>
+
+                            <Entry x:Name="txtMonto" Placeholder="Monto a cobrar (consulta o copago)" Keyboard="Numeric" />
+                            <Picker x:Name="pkMedioPago" Title="Medio de pago">
+                                <Picker.Items>
+                                    <x:String>Efectivo</x:String>
+                                    <x:String>Tarjeta</x:String>
+                                    <x:String>Transferencia</x:String>
+                                </Picker.Items>
+                            </Picker>
+
+                            <Button x:Name="btnAcreditar" Text="Acreditar y pasar a sala" BackgroundColor="#16A34A"
+                                    TextColor="White" FontAttributes="Bold" CornerRadius="10" Clicked="OnAcreditarClicked" />
+                            <Button x:Name="btnAusente" Text="Marcar ausente (no vino)" BackgroundColor="White"
+                                    TextColor="#DC2626" BorderColor="#FCA5A5" BorderWidth="1" CornerRadius="10"
+                                    Clicked="OnMarcarAusente" />
+                            <Label x:Name="lblAvisoEstado" IsVisible="False" FontSize="12" TextColor="#B45309" />
+                        </VerticalStackLayout>
+
+                        <!-- Comprobante de la factura recién emitida -->
+                        <Border x:Name="bdComprobante" IsVisible="False" BackgroundColor="#F0FDF4" Stroke="#86EFAC"
+                                StrokeShape="RoundRectangle 8" Padding="12">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="🧾 Comprobante de factura" FontAttributes="Bold" TextColor="#166534" />
+                                <Label x:Name="lblComprobante" FontSize="13" TextColor="#14532D" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Llamados telefónicos -->
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="📞 Llamados pendientes" Style="{StaticResource Titulo}" />
+                        <Label Text="Turnos de los próximos 3 días sin confirmar y pacientes que faltaron en la última semana."
+                               Style="{StaticResource Ayuda}" />
+                        <Label x:Name="lblSinLlamados" Text="No hay llamados pendientes 🎉" IsVisible="False"
+                               Style="{StaticResource Ayuda}" HorizontalOptions="Center" Margin="0,12" />
+                        <VerticalStackLayout x:Name="stLlamados" Spacing="0">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="ent:LlamadoPendiente">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Padding="4,10">
+                                        <VerticalStackLayout Spacing="3">
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Border Style="{StaticResource Etiqueta}" BackgroundColor="{Binding ColorFondoMotivo}">
+                                                    <Label Text="{Binding Motivo}" TextColor="{Binding ColorMotivo}"
+                                                           FontSize="11" FontAttributes="Bold" />
+                                                </Border>
+                                                <Label Text="{Binding Paciente}" FontAttributes="Bold" VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+                                            <Label Text="{Binding Detalle}" Style="{StaticResource Ayuda}" />
+                                            <Label Text="{Binding IntentosTxt}" IsVisible="{Binding TieneIntentos}"
+                                                   FontSize="11" TextColor="#B45309" />
+                                        </VerticalStackLayout>
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                            <Button Text="Confirmó" CommandParameter="Confirmó" IsVisible="{Binding EsConfirmacion}"
+                                                    Style="{StaticResource BotonChico}" BackgroundColor="#2563EB" TextColor="White"
+                                                    Clicked="OnResultadoLlamado" />
+                                            <Button Text="Canceló" CommandParameter="Canceló" IsVisible="{Binding EsConfirmacion}"
+                                                    Style="{StaticResource BotonChico}" BackgroundColor="White" TextColor="#DC2626"
+                                                    BorderColor="#FCA5A5" BorderWidth="1" Clicked="OnResultadoLlamado" />
+                                            <Button Text="Contactado" CommandParameter="Contactado" IsVisible="{Binding EsAusencia}"
+                                                    Style="{StaticResource BotonChico}" BackgroundColor="#2563EB" TextColor="White"
+                                                    Clicked="OnResultadoLlamado" />
+                                            <Button Text="No contestó" CommandParameter="No contestó"
+                                                    Style="{StaticResource BotonChico}" BackgroundColor="#F1F5F9" TextColor="#334155"
+                                                    Clicked="OnResultadoLlamado" />
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Sala de espera -->
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="🪑 Pacientes en sala de espera" Style="{StaticResource Titulo}" />
+                        <Label Text="Ya acreditados, esperando que el médico los llame." Style="{StaticResource Ayuda}" />
+                        <Label x:Name="lblSalaVacia" Text="No hay pacientes esperando" IsVisible="False"
+                               Style="{StaticResource Ayuda}" HorizontalOptions="Center" Margin="0,12" />
+                        <VerticalStackLayout x:Name="stSalaEspera" Spacing="0">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="ent:TurnoRecepcion">
+                                    <Grid ColumnDefinitions="56,*" ColumnSpacing="10" Padding="4,8">
+                                        <Label Text="{Binding Hora}" FontAttributes="Bold" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1">
+                                            <Label Text="{Binding Paciente}" FontAttributes="Bold" />
+                                            <Label Text="{Binding Profesional}" Style="{StaticResource Ayuda}" />
+                                            <Label Text="{Binding Lugar}" Style="{StaticResource Ayuda}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
         </VerticalStackLayout>
-
-        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="15">
-            <!-- Columna Izquierda: Presentación y Acreditación -->
-            <Frame Grid.Column="0" CornerRadius="10" Padding="15" BorderColor="#E2E8F0">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Acreditar y Cobrar" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
-                    <Entry Placeholder="Obra Social / Cobertura" x:Name="txtObraSocial"/>
-                    <Entry Placeholder="Monto $ / Copago" x:Name="txtMonto" Keyboard="Numeric"/>
-                    <Picker x:Name="pkMedioPago" Title="Seleccionar Medio de Pago">
-                        <Picker.Items>
-                            <x:String>Efectivo</x:String>
-                            <x:String>Tarjeta</x:String>
-                            <x:String>Transferencia</x:String>
-                        </Picker.Items>
-                    </Picker>
-                    <Button Text="Acreditar y Pasar a Sala" BackgroundColor="#16A34A" TextColor="White" Clicked="OnAcreditarClicked"/>
-                </VerticalStackLayout>
-            </Frame>
-
-            <!-- Columna Derecha: Sala de Espera Activa -->
-            <Frame Grid.Column="1" CornerRadius="10" Padding="15" BorderColor="#E2E8F0">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Pacientes en Sala de Espera" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
-                    <CollectionView x:Name="cvSalaEspera">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <HorizontalStackLayout Spacing="10" Padding="5">
-                                    <Label Text="{Binding NombrePaciente}" VerticalOptions="Center" FontAttributes="Bold"/>
-                                    <Label Text="{Binding Especialidad}" VerticalOptions="Center" TextColor="#64748B"/>
-                                    <Button Text="Llamar" BackgroundColor="#2563EB" TextColor="White"/>
-                                </HorizontalStackLayout>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
-            </Frame>
-        </Grid>
-    </Grid>
+    </ScrollView>
 </ContentPage>
