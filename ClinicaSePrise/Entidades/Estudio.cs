@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ClinicaSePrise.Entidades
 {
@@ -13,6 +11,9 @@ namespace ClinicaSePrise.Entidades
         public string horarioEspecifico { get; set; }
         public string responsable { get; set; }
 
+        // Constructor vacío necesario para mapeos rápidos
+        public Estudio() { }
+
         public Estudio(int idEstudio, string nombre, string especialidad, string requisitosPrevios, string horarioEspecifico, string responsable)
         {
             this.idEstudio = idEstudio;
@@ -22,5 +23,8 @@ namespace ClinicaSePrise.Entidades
             this.horarioEspecifico = horarioEspecifico;
             this.responsable = responsable;
         }
+
+        // CLAVE: Esto evita que el desplegable se vea en blanco en Windows
+        public override string ToString() => nombre;
     }
 }

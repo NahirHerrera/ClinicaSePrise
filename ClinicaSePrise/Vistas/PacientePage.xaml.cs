@@ -6,16 +6,38 @@ namespace ClinicaSePrise.Vistas;
 
 public partial class PacientePage : ContentPage
 {
+    private bool _esTurnoImagen = false;
+
     public PacientePage()
     {
         InitializeComponent();
+
+        if (pkTipoAtencion != null)
+        {
+            pkTipoAtencion.ItemsSource = new List<string>
+            {
+                "Atención Médica (Consultorio)",
+                "Diagnóstico por Imágenes"
+            };
+            pkTipoAtencion.SelectedIndex = 0;
+        }
+
         dpFecha.MinimumDate = DateTime.Today;
+        dpFecha.Date = DateTime.Today;
+
+        if (dpFechaImagen != null)
+        {
+            dpFechaImagen.MinimumDate = DateTime.Today;
+            dpFechaImagen.Date = DateTime.Today;
+        }
+
         _ = CargarTodo();
     }
 
     async Task CargarTodo()
     {
         await CargarEspecialidades();
+        await CargarEstudiosImagen();
         await CargarTurnos();
         await CargarFacturas();
         await CargarEstudios();
@@ -24,13 +46,21 @@ public partial class PacientePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await CargarEspecialidades();
-        await CargarTurnos();
-        await CargarFacturas();
-        await CargarEstudios();
+        await CargarTodo();
     }
 
     void OnCerrarSesionClicked(object sender, EventArgs e) => Application.Current!.Windows[0].Page = new LoginPage();
+
+    private void OnTipoAtencionChanged(object sender, EventArgs e)
+    {
+        _esTurnoImagen = pkTipoAtencion?.SelectedIndex == 1;
+
+        if (layoutMedico != null) layoutMedico.IsVisible = !_esTurnoImagen;
+        if (layoutImagen != null) layoutImagen.IsVisible = _esTurnoImagen;
+
+        BindableLayout.SetItemsSource(ListaSlots, null);
+        if (SinSlots != null) SinSlots.IsVisible = false;
+    }
 
     async Task CargarTurnos()
     {
@@ -43,7 +73,7 @@ public partial class PacientePage : ContentPage
                 new MySqlParameter("@id", Sesion.IdPaciente));
 
             BindableLayout.SetItemsSource(ListaTurnos, turnos);
-            SinTurnos.IsVisible = turnos.Count == 0;
+            if (SinTurnos != null) SinTurnos.IsVisible = turnos.Count == 0;
         }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
@@ -58,7 +88,7 @@ public partial class PacientePage : ContentPage
                 new MySqlParameter("@id", Sesion.IdPaciente));
 
             BindableLayout.SetItemsSource(ListaFacturas, facturas);
-            SinFacturas.IsVisible = facturas.Count == 0;
+            if (SinFacturas != null) SinFacturas.IsVisible = facturas.Count == 0;
         }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
@@ -72,14 +102,41 @@ public partial class PacientePage : ContentPage
                 new MySqlParameter("@id", Sesion.IdPaciente));
 
             BindableLayout.SetItemsSource(ListaEstudios, estudios);
-            SinEstudios.IsVisible = estudios.Count == 0;
+            if (SinEstudios != null) SinEstudios.IsVisible = estudios.Count == 0;
         }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
 
     async Task CargarEspecialidades()
     {
-        try { pkEspecialidad.ItemsSource = await Db.Query("CALL ListarEspecialidades()", r => r.GetString(0)); }
+        try
+        {
+            if (pkEspecialidad != null)
+            {
+                pkEspecialidad.ItemsSource = await Db.Query("CALL ListarEspecialidades()", r => r.GetString(0));
+            }
+        }
+        catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
+    }
+
+    async Task CargarEstudiosImagen()
+    {
+        try
+        {
+            if (pkPracticaImagen != null)
+            {
+                var lista = await Db.Query("CALL ListarPracticasImagen()",
+                    r => new Estudio(
+                        r.GetInt32(0),
+                        r.GetString(1),
+                        "Diagnóstico por imágenes",
+                        r.IsDBNull(2) ? "" : r.GetString(2),
+                        "",
+                        r.IsDBNull(4) ? "" : r.GetString(4)
+                    ));
+                pkPracticaImagen.ItemsSource = lista;
+            }
+        }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
 
@@ -87,19 +144,23 @@ public partial class PacientePage : ContentPage
     {
         if (pkEspecialidad.SelectedItem is not string esp) return;
         BindableLayout.SetItemsSource(ListaSlots, null);
-        SinSlots.IsVisible = false;
+        if (SinSlots != null) SinSlots.IsVisible = false;
 
         try
         {
-            pkProfesional.ItemsSource = await Db.Query("CALL ProfesionalesPorEspecialidad(@e)",
-                r => new ProfesionalItem(r.GetInt32(0), r["nombre"].ToString()),
-                new MySqlParameter("@e", esp));
+            if (pkProfesional != null)
+            {
+                pkProfesional.ItemsSource = await Db.Query("CALL ProfesionalesPorEspecialidad(@e)",
+                    r => new ProfesionalItem(r.GetInt32(0), r["nombre"].ToString()),
+                    new MySqlParameter("@e", esp));
+            }
         }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
 
     async void BuscarSlots(object sender, EventArgs e)
     {
+        if (_esTurnoImagen) return;
         if (pkProfesional.SelectedItem is not ProfesionalItem p) return;
         try
         {
@@ -108,34 +169,75 @@ public partial class PacientePage : ContentPage
                 new MySqlParameter("@p", p.idProfesional), new MySqlParameter("@f", dpFecha.Date));
 
             BindableLayout.SetItemsSource(ListaSlots, slots);
-            SinSlots.IsVisible = slots.Count == 0;
+            if (SinSlots != null) SinSlots.IsVisible = slots.Count == 0;
+        }
+        catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
+    }
+
+    async void BuscarSlotsImagen(object sender, EventArgs e)
+    {
+        if (!_esTurnoImagen) return;
+        if (pkPracticaImagen?.SelectedItem is not Estudio estudio) return;
+
+        try
+        {
+            var slots = await Db.Query("CALL TurnosDisponibles(@p, @f)",
+                r => new Slot(r.GetDateTime(0), Convert.ToInt32(r[1]), r.GetString(2)),
+                new MySqlParameter("@p", estudio.idEstudio), new MySqlParameter("@f", dpFechaImagen.Date));
+
+            BindableLayout.SetItemsSource(ListaSlots, slots);
+            if (SinSlots != null) SinSlots.IsVisible = slots.Count == 0;
         }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
 
     async void OnSlotClicked(object sender, EventArgs e)
     {
-        var s = (Slot)((Button)sender).BindingContext;
-        if (pkProfesional.SelectedItem is not ProfesionalItem p || pkEspecialidad.SelectedItem is not string esp) return;
-        var sobre = s.tipo == "Sobreturno";
-        if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync(sobre ? "Confirmar sobreturno" : "Confirmar turno", $"{esp} · {s.fechaHora:dd/MM/yyyy HH:mm}", "Reservar", "Volver")) return;
+        if (sender is not Button btn || btn.BindingContext is not Slot s) return;
 
-        try
+        if (_esTurnoImagen)
         {
-            var error = await Db.Query($"CALL {(sobre ? "AgendarSobreturno" : "AgendarTurno")}(@a,@b,@c,@d,@f)", r => r.GetString(0),
-                new MySqlParameter("@a", Sesion.IdPaciente), new MySqlParameter("@b", p.idProfesional),
-                new MySqlParameter("@c", esp), new MySqlParameter("@d", s.fechaHora), new MySqlParameter("@f", s.duracion));
+            if (pkPracticaImagen?.SelectedItem is not Estudio estudio) return;
+            if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Confirmar Estudio", $"Estudio: {estudio.nombre}\nFecha: {s.fechaHora:dd/MM/yyyy HH:mm}", "Reservar", "Volver")) return;
 
-            await Application.Current!.Windows[0].Page!.DisplayAlertAsync(error.Count == 0 ? "Listo" : "No se pudo", error.Count == 0 ? (sobre ? "Sobreturno reservado." : "Turno reservado.") : error[0], "OK");
-            await CargarTurnos();
-            BuscarSlots(this, EventArgs.Empty);
+            try
+            {
+                var error = await Db.Query("CALL AgendarTurno(@a,@b,@c,@d,@f)", r => r.GetString(0),
+                    new MySqlParameter("@a", Sesion.IdPaciente),
+                    new MySqlParameter("@b", estudio.idEstudio),
+                    new MySqlParameter("@c", estudio.nombre),
+                    new MySqlParameter("@d", s.fechaHora),
+                    new MySqlParameter("@f", s.duracion));
+
+                await Application.Current!.Windows[0].Page!.DisplayAlertAsync(error.Count == 0 ? "Listo" : "No se pudo", error.Count == 0 ? "Estudio reservado con éxito." : error[0], "OK");
+                await CargarTurnos();
+                BuscarSlotsImagen(this, EventArgs.Empty);
+            }
+            catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
         }
-        catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
+        else
+        {
+            if (pkProfesional?.SelectedItem is not ProfesionalItem p || pkEspecialidad?.SelectedItem is not string esp) return;
+            var sobre = s.tipo == "Sobreturno";
+            if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync(sobre ? "Confirmar sobreturno" : "Confirmar turno", $"{esp} · {s.fechaHora:dd/MM/yyyy HH:mm}", "Reservar", "Volver")) return;
+
+            try
+            {
+                var error = await Db.Query($"CALL {(sobre ? "AgendarSobreturno" : "AgendarTurno")}(@a,@b,@c,@d,@f)", r => r.GetString(0),
+                    new MySqlParameter("@a", Sesion.IdPaciente), new MySqlParameter("@b", p.idProfesional),
+                    new MySqlParameter("@c", esp), new MySqlParameter("@d", s.fechaHora), new MySqlParameter("@f", s.duracion));
+
+                await Application.Current!.Windows[0].Page!.DisplayAlertAsync(error.Count == 0 ? "Listo" : "No se pudo", error.Count == 0 ? (sobre ? "Sobreturno reservado." : "Turno reservado.") : error[0], "OK");
+                await CargarTurnos();
+                BuscarSlots(this, EventArgs.Empty);
+            }
+            catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
+        }
     }
 
     async void Cancelar_Clicked(object sender, EventArgs e)
     {
-        var t = (Turno)((Button)sender).BindingContext;
+        if (sender is not Button btn || btn.BindingContext is not Turno t) return;
         if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Cancelar turno", $"¿Cancelar el turno de {t.especialidad}?", "Sí", "No")) return;
 
         var ok = (await Db.Query("CALL CancelarTurno(@t,@p)", r => Convert.ToInt32(r[0]),
@@ -143,6 +245,9 @@ public partial class PacientePage : ContentPage
 
         await Application.Current!.Windows[0].Page!.DisplayAlertAsync(ok ? "Listo" : "No se pudo", ok ? "Turno cancelado." : "Ese turno ya no se puede cancelar.", "OK");
         await CargarTurnos();
-        BuscarSlots(this, EventArgs.Empty);
+        if (_esTurnoImagen)
+            BuscarSlotsImagen(this, EventArgs.Empty);
+        else
+            BuscarSlots(this, EventArgs.Empty);
     }
 }
