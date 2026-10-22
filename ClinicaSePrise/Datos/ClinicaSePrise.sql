@@ -412,7 +412,6 @@ BEGIN
 END //
 DELIMITER ;
 
-
 -- AGREGAR PACIENTE
 
 DELIMITER //
@@ -755,8 +754,22 @@ BEGIN
   SELECT ROW_COUNT() AS llamado;
 END //
 
+-- COBERTURA PACIENTE (Comprobante de retiro)
+
+DELIMITER //
+CREATE PROCEDURE CoberturaPaciente(IN p_dni VARCHAR(20))
+BEGIN
+  SELECT IF(modalidadCobertura = 'Obra Social',
+            CONCAT('Obra Social - ', COALESCE(obraSocial, 's/d')),
+            COALESCE(modalidadCobertura, 'Particular')) AS cobertura
+  FROM Paciente
+  WHERE dni = p_dni;
+END //
+DELIMITER ;
+
 -- LABORATORIO: ATENDER (descuenta insumos y emite comprobante de retiro a 7 días)
 
+DELIMITER //
 CREATE PROCEDURE AtenderOrdenLab(IN p_idOrden INT)
 atender: BEGIN
   DECLARE v_pac INT;
@@ -796,7 +809,45 @@ atender: BEGIN
 
   SELECT idComprobante, fechaAtencion, fechaRetiro FROM Comprobante WHERE idComprobante = v_com;
 END atender //
+DELIMITER ; 
+
+-- =====================================================
+--  CONTROL DE STOCK (Laboratorio e Imágenes)
+-- =====================================================
+
+DELIMITER //
+-- STOCK POR SERVICIO
+-- p_especialidad: 'Laboratorio' o 'Diagnóstico por imágenes'
+
+CREATE PROCEDURE StockInsumos(IN p_especialidad VARCHAR(100))
+BEGIN
+  SELECT i.idInsumo, i.nombre, i.idEstudio, i.stock, i.stockMinimo,
+         IF(i.stock <= i.stockMinimo, 'Reposición', 'Disponible') AS estadoReposicion
+  FROM Insumo i
+  JOIN Estudio e ON e.idEstudio = i.idEstudio
+  WHERE e.especialidad = p_especialidad
+  ORDER BY (i.stock <= i.stockMinimo) DESC, i.nombre;
+END //
+
+-- REPONER STOCK (suma unidades y actualiza el estado)
+
+CREATE PROCEDURE ReponerInsumo(IN p_idInsumo INT, IN p_cantidad INT)
+BEGIN
+  UPDATE Insumo
+  SET stock = COALESCE(stock, 0) + p_cantidad,
+      estadoReposicion = IF(stock <= stockMinimo, 'Reposición', 'Disponible')
+  WHERE idInsumo = p_idInsumo AND p_cantidad > 0;
+END //
 DELIMITER ;
+
+-- =====================================================
+--  PRUEBAS
+-- =====================================================
+
+-- CALL StockInsumos('Laboratorio');
+-- CALL StockInsumos('Diagnóstico por imágenes');
+-- CALL ReponerInsumo(2, 10);
+
 
 -- =====================================================
 --  DATOS DE PRUEBA
@@ -1077,7 +1128,7 @@ ORDER BY t.fechaHora;
 SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
-WHERE i.stock <= i.stockMinimo;paciente
+WHERE i.stock <= i.stockMinimo;
 
 ALTER TABLE Usuario 
 ADD COLUMN nombre VARCHAR(100) AFTER password,

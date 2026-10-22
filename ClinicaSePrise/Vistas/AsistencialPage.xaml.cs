@@ -2,12 +2,18 @@ using ClinicaSePrise.Datos;
 using ClinicaSePrise.Entidades;
 
 namespace ClinicaSePrise.Vistas;
+
 public partial class AsistencialPage : ContentPage
 {
     public AsistencialPage()
     {
         InitializeComponent();
+    }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await stock.Cargar();
     }
     private async void OnCerrarSesionClicked(object sender, EventArgs e)
     {

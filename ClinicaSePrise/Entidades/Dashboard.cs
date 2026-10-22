@@ -15,7 +15,7 @@ public class Dashboard
     public int EnEspera { get; set; }
     public int InsumosCriticos { get; set; }
     public List<Turno> Turnos { get; set; } = new();
-    public List<Insumo> Stock { get; set; } = new();
+    public List<InsumoStock> Stock { get; set; } = new();
     public string Rol { get; set; } = "";
     public List<string> Pantallas { get; set; } = new();
 }

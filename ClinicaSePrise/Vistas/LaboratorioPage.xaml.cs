@@ -30,6 +30,7 @@ public partial class LaboratorioPage : ContentPage
         {
             await CargarPracticas();
             await Cargar();
+            await stock.Cargar();
         }
         catch (Exception ex) { await Aviso("Error", ex.Message); }
     }
@@ -119,9 +120,11 @@ public partial class LaboratorioPage : ContentPage
 
             lblRetiro.Text = $"Paciente: {sel.Paciente}\nCobertura: {cobertura}\nPrácticas: {sel.Practicas}\n{res}";
             bdComprobante.IsVisible = true;
-            await Cargar();
         }
         catch (Exception ex) { await Aviso("Error", ex.Message); }
+
+        await Cargar();
+        await stock.Cargar();
     }
 
     async void OnBuscarPaciente(object sender, EventArgs e)
@@ -179,7 +182,6 @@ public partial class LaboratorioPage : ContentPage
         {
             string ids = string.Join(",", cvPracticas.SelectedItems.Cast<PracticaLab>().Select(x => x.IdEstudio));
             string medio = EsObraSocial ? "Obra Social" : pkMedio.SelectedItem.ToString();
-            string res;
 
             if (idPac == 0)
             {
@@ -198,26 +200,28 @@ public partial class LaboratorioPage : ContentPage
                     return;
                 }
 
-                res = (await Db.Query("CALL RegistrarPacienteYOrdenLab(@nom,@ape,@dni,@sex,@fnac,@mod,@os,@i,@m,@mp)", r => r.GetString(0),
+                idPac = (await Db.Query("CALL RegistrarPacienteLaboratorio(@nom,@ape,@dni,@sex,@fnac,@mod,@os)",
+                    r => r.GetString(0) == "OK" ? r.GetInt32(1) : 0,
                     new MySqlParameter("@nom", nombre),
                     new MySqlParameter("@ape", apellido),
                     new MySqlParameter("@dni", entDni.Text.Trim()),
                     new MySqlParameter("@sex", sexo),
                     new MySqlParameter("@fnac", fechaNac),
                     new MySqlParameter("@mod", pkModalidadCobertura.SelectedItem.ToString()),
-                    new MySqlParameter("@os", EsObraSocial ? pkObraSocial.SelectedItem.ToString() : DBNull.Value),
-                    new MySqlParameter("@i", ids),
-                    new MySqlParameter("@m", Monto),
-                    new MySqlParameter("@mp", medio))).First();
+                    new MySqlParameter("@os", EsObraSocial ? pkObraSocial.SelectedItem.ToString() : DBNull.Value))).First();
+
+                if (idPac == 0)
+                {
+                    await Aviso("Laboratorio", "Ya existe un paciente con ese DNI");
+                    return;
+                }
             }
-            else
-            {
-                res = (await Db.Query("CALL RegistrarOrdenLab(@p,@i,@m,@mp)", r => r.GetString(0),
-                    new MySqlParameter("@p", idPac),
-                    new MySqlParameter("@i", ids),
-                    new MySqlParameter("@m", Monto),
-                    new MySqlParameter("@mp", medio))).First();
-            }
+
+            string res = (await Db.Query("CALL RegistrarOrdenLab(@p,@i,@m,@mp)", r => r.GetString(0),
+                new MySqlParameter("@p", idPac),
+                new MySqlParameter("@i", ids),
+                new MySqlParameter("@m", Monto),
+                new MySqlParameter("@mp", medio))).First();
 
             await Aviso("Laboratorio", res == "OK" ? "Orden registrada con éxito" : res);
             if (res != "OK") return;

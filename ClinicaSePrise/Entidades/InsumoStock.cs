@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ClinicaSePrise.Entidades
 {
-    public class Insumo
+    public class InsumoStock
     {
         public int idInsumo { get; set; }
         public string nombre { get; set; }
@@ -13,7 +13,7 @@ namespace ClinicaSePrise.Entidades
         public int stockMinimo { get; set; }
         public string estadoReposicion { get; set; }
 
-        public Insumo(int idInsumo, string nombre, int? idEstudio, int? stock, int stockMinimo, string estadoReposicion)
+        public InsumoStock(int idInsumo, string nombre, int? idEstudio, int? stock, int stockMinimo, string estadoReposicion)
         {
             this.idInsumo = idInsumo;
             this.nombre = nombre;

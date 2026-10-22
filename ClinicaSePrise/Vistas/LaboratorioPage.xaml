@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ent="clr-namespace:ClinicaSePrise.Entidades"
+             xmlns:vistas="clr-namespace:ClinicaSePrise.Vistas"
              x:Class="ClinicaSePrise.Vistas.LaboratorioPage"
              Title="Laboratorio">
 
@@ -16,7 +17,7 @@
         <Label Grid.Row="0" x:Name="lblBienvenida" FontSize="18" FontAttributes="Bold" />
 
         <ScrollView Grid.Row="1">
-            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="20" RowSpacing="20">
+            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="20" RowSpacing="20">
 
                 <VerticalStackLayout Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Spacing="8">
                     <Label Text="1. Ingreso de orden (sin turno)" FontSize="20" FontAttributes="Bold" />
@@ -143,6 +144,11 @@
                             <Label x:Name="lblRetiro" />
                         </VerticalStackLayout>
                     </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Row="2" Grid.ColumnSpan="2" Spacing="8">
+                    <Label Text="4. Stock de insumos de laboratorio" FontSize="20" FontAttributes="Bold" />
+                    <vistas:StockPage x:Name="stock" Sector="Laboratorio" />
                 </VerticalStackLayout>
 
             </Grid>

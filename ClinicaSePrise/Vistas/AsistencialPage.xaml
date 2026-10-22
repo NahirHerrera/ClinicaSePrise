@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vistas="clr-namespace:ClinicaSePrise.Vistas"
              x:Class="ClinicaSePrise.Vistas.AsistencialPage"
              Title="Servicios Asistenciales y Diagnóstico"
              BackgroundColor="#FAF5FF">
@@ -23,21 +24,19 @@
                 <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
             </VerticalStackLayout>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
-                <Frame Grid.Column="0" Padding="15">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Estudios Realizados Hoy" FontSize="18" FontAttributes="Bold"/>
-                        <CollectionView x:Name="cvEstudiosHoy" HeightRequest="200"/>
-                    </VerticalStackLayout>
-                </Frame>
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Estudios Realizados Hoy" FontSize="18" FontAttributes="Bold"/>
+                    <CollectionView x:Name="cvEstudiosHoy" HeightRequest="200"/>
+                </VerticalStackLayout>
+            </Frame>
 
-                <Frame Grid.Column="1" Padding="15">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold"/>
-                        <Button Text="Solicitar Reposición de Placas / Gel" BackgroundColor="#9333EA" TextColor="White"/>
-                    </VerticalStackLayout>
-                </Frame>
-            </Grid>
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold"/>
+                    <vistas:StockPage x:Name="stock" Sector="Diagnóstico por imágenes" />
+                </VerticalStackLayout>
+            </Frame>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
