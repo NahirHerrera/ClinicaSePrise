@@ -7,7 +7,6 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Estilo simple para los botones del navbar -->
             <Style x:Key="SimpleButtonStyle" TargetType="Button">
                 <Setter Property="BackgroundColor" Value="Transparent" />
                 <Setter Property="TextColor" Value="#333333" />
@@ -17,13 +16,11 @@
                 <Setter Property="CornerRadius" Value="0" />
             </Style>
 
-            <!-- Estilo para el botón de cerrar sesión -->
             <Style x:Key="LogoutButtonStyle" TargetType="Button" BasedOn="{StaticResource SimpleButtonStyle}">
                 <Setter Property="TextColor" Value="White" />
                 <Setter Property="FontAttributes" Value="Bold" />
             </Style>
 
-            <!-- Separador fino -->
             <Style x:Key="ThinSeparator" TargetType="BoxView">
                 <Setter Property="HeightRequest" Value="1" />
                 <Setter Property="Color" Value="#E0E0E0" />
@@ -37,45 +34,38 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-
         <ScrollView Grid.Column="0" BackgroundColor="#F9F9F9">
             <StackLayout Padding="12" Spacing="6">
 
-
                 <StackLayout Orientation="Vertical" Padding="6" Spacing="2">
                     <Label x:Name="LblDisplayNombre"
-                 FontAttributes="Bold"
-                 FontSize="16"
-                 TextColor="#222"
-                 LineBreakMode="TailTruncation"/>
-                 <Label x:Name="LblRol"
-                 FontSize="12"
-                 TextColor="Gray"
-                 LineBreakMode="TailTruncation"/>
+                           FontAttributes="Bold"
+                           FontSize="16"
+                           TextColor="#222"
+                           LineBreakMode="TailTruncation" />
+                    <Label x:Name="LblRol"
+                           FontSize="12"
+                           TextColor="Gray"
+                           LineBreakMode="TailTruncation" />
                 </StackLayout>
 
                 <BoxView Style="{StaticResource ThinSeparator}" />
-
 
                 <Button x:Name="BtnHome" Text="Home" Style="{StaticResource SimpleButtonStyle}" />
                 <Button x:Name="BtnPaciente" Text="Paciente" Style="{StaticResource SimpleButtonStyle}" />
                 <Button x:Name="BtnRecepcion" Text="Recepción" Style="{StaticResource SimpleButtonStyle}" />
                 <Button x:Name="BtnMedico" Text="Médico" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnAdministracion" Text="Administración" Style="{StaticResource SimpleButtonStyle}" />
                 <Button x:Name="BtnGuardia" Text="Guardia / Internación" Style="{StaticResource SimpleButtonStyle}" />
                 <Button x:Name="BtnLaboratorio" Text="Laboratorio" Style="{StaticResource SimpleButtonStyle}" />
                 <Button x:Name="BtnAsistencial" Text="Asistencial" Style="{StaticResource SimpleButtonStyle}" />
 
                 <BoxView HeightRequest="8" Color="Transparent" />
 
-
-                <Button x:Name="BtnCerrarSesion" Text="🚪 Cerrar Sesión" Style="{StaticResource LogoutButtonStyle}" TextColor="black" />
+                <Button x:Name="BtnCerrarSesion" Text="🚪 Cerrar Sesión" Style="{StaticResource LogoutButtonStyle}" TextColor="Black" />
 
             </StackLayout>
         </ScrollView>
 
-
-        
         <ContentView Grid.Column="1" x:Name="ContentArea" Padding="12">
             <Label Text="Bienvenido" HorizontalOptions="Center" VerticalOptions="Center" FontSize="18" TextColor="#222" />
         </ContentView>

@@ -892,7 +892,7 @@ INSERT INTO Usuario (usuario, password, displayNombre, idRol, idPaciente, idProf
 ('jperez', SHA2('1234',256), 'Juan Pérez', 1, 1, NULL),
 ('recepcion', SHA2('1234',256), 'Recepcion', 2, NULL, NULL),
 ('mgomez', SHA2('1234',256), 'María Gómez', 3, NULL, 1),
-('agarcia', SHA2('1234',256), 'Agarcia', 4, NULL, NULL),
+('agarcia', SHA2('1234',256), 'Andrea García', 4, NULL, NULL),
 ('guardia_internacion', SHA2('1234',256), 'Guardia Internacion', 5, NULL, NULL),
 ('laboratorio', SHA2('1234',256), 'Laboratorio', 6, NULL, NULL),
 ('asistencial', SHA2('1234',256), 'Asistencial', 7, NULL, NULL);
@@ -1099,7 +1099,7 @@ JOIN Estudio e ON c.idEstudio = e.idEstudio;
 SELECT u.idUsuario, u.usuario, r.nombre AS rol, u.idRol
 FROM Usuario u
 JOIN Rol r ON u.idRol = r.idRol
-WHERE u.usuario = 'andrea' AND u.password = SHA2('1234',256);
+WHERE u.usuario = 'agarcia' AND u.password = SHA2('1234',256);
 
 -- Pantallas del menú según el rol (Administracion = 4)
 SELECT pantalla FROM RolPantalla WHERE idRol = 4;
@@ -1129,14 +1129,6 @@ SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
-
-ALTER TABLE Usuario 
-ADD COLUMN nombre VARCHAR(100) AFTER password,
-ADD COLUMN apellido VARCHAR(100) AFTER nombre;
-
-UPDATE Usuario 
-SET nombre = 'Andrea', apellido = 'García' 
-WHERE usuario = 'agarcia';
 
 -- =====================================================
 --  PRUEBAS DE LABORATORIO
