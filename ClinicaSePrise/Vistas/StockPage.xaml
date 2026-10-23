@@ -6,18 +6,18 @@
     <VerticalStackLayout Spacing="10">
         <Label x:Name="lblResumen" FontSize="16" FontAttributes="Bold" />
         <Grid ColumnDefinitions="3*,*,*,*,*" Padding="8,0">
-            <Label Text="Insumo" FontAttributes="Bold" />
-            <Label Grid.Column="1" Text="Stock" FontAttributes="Bold" />
-            <Label Grid.Column="2" Text="Mínimo" FontAttributes="Bold" />
-            <Label Grid.Column="3" Text="Estado" FontAttributes="Bold" />
+            <Label Text="Insumo" FontAttributes="Bold" TextColor="Grey"/>
+            <Label Grid.Column="1" Text="Stock" FontAttributes="Bold" TextColor="Grey"/>
+            <Label Grid.Column="2" Text="Mínimo" FontAttributes="Bold" TextColor="Grey"/>
+            <Label Grid.Column="3" Text="Estado" FontAttributes="Bold" TextColor="Grey"/>
         </Grid>
         <CollectionView x:Name="lista">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="ent:InsumoStock">
                     <Grid ColumnDefinitions="3*,*,*,*,*" Padding="8">
-                        <Label Text="{Binding nombre}" VerticalOptions="Center" />
-                        <Label Grid.Column="1" Text="{Binding stock}" VerticalOptions="Center" />
-                        <Label Grid.Column="2" Text="{Binding stockMinimo}" VerticalOptions="Center" />
+                        <Label Text="{Binding nombre}" VerticalOptions="Center" TextColor="Grey"/>
+                        <Label Grid.Column="1" Text="{Binding stock}" VerticalOptions="Center" TextColor="Grey"/>
+                        <Label Grid.Column="2" Text="{Binding stockMinimo}" VerticalOptions="Center" TextColor="Grey"/>
                         <Label Grid.Column="3" Text="{Binding estadoReposicion}" TextColor="Green" VerticalOptions="Center">
                             <Label.Triggers>
                                 <DataTrigger TargetType="Label" Binding="{Binding estadoReposicion}" Value="Reposición">

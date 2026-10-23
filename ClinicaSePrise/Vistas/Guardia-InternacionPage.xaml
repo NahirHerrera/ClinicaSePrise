@@ -23,18 +23,23 @@
                 <Label Text="Gestión de Derivaciones a Estudios (Circuito B)" FontSize="22" FontAttributes="Bold" TextColor="#991B1B"/>
             </VerticalStackLayout>
 
-            <Frame CornerRadius="10" Padding="15">
+            <Frame CornerRadius="10" Padding="15"
+                   BackgroundColor="{AppThemeBinding Light=LightGrey, Dark=LightGrey}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Nueva Derivación de Guardia/Internación" FontSize="16" FontAttributes="Bold"/>
                     <Entry Placeholder="DNI o N° Historia Clínica del Paciente"/>
-                    <Picker Title="Origen de Derivación">
+                    <Picker Title="Origen de Derivación"
+                            TitleColor="Black"
+                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}">
                         <Picker.Items>
                             <x:String>Guardia Médica</x:String>
                             <x:String>Internación Piso</x:String>
                             <x:String>UTI</x:String>
                         </Picker.Items>
                     </Picker>
-                    <Picker Title="Estudio Solicitado (Circuito B)">
+                    <Picker Title="Estudio Solicitado (Circuito B)"
+                            TitleColor="Black"
+                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}">
                         <Picker.Items>
                             <x:String>Laboratorio de Sangre Urgente</x:String>
                             <x:String>Radiografía de Tórax</x:String>

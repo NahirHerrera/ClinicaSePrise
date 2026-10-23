@@ -39,6 +39,7 @@ namespace ClinicaSePrise.Vistas
             LblDisplayNombre.Text = Sesion.DisplayNombre ?? "";
             LblRol.Text = Sesion.Rol ?? "";
 
+            BtnHome.IsVisible = EsAdmin;
             BtnPaciente.IsVisible = EsAdmin;
             BtnRecepcion.IsVisible = EsAdmin;
             BtnMedico.IsVisible = EsAdmin;
