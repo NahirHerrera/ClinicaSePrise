@@ -12,16 +12,14 @@ public partial class AsistencialPage : ContentPage
         _ = CargarTodo();
     }
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await CargarTodo();
-    }
+    Task Alerta(string titulo, string mensaje) =>
+        Application.Current.Windows[0].Page.DisplayAlert(titulo, mensaje, "OK");
 
     async Task CargarTodo()
     {
         await CargarImagenes();
-        await stock.Cargar();
+        try { await stock.Cargar(); }
+        catch (Exception ex) { await Alerta("Error en stock", ex.Message); }
     }
 
     async Task CargarPendientes()
@@ -45,7 +43,7 @@ public partial class AsistencialPage : ContentPage
             BindableLayout.SetItemsSource(ListaAtendidos, atendidos);
             SinAtendidos.IsVisible = atendidos.Count == 0;
         }
-        catch (Exception ex) { await DisplayAlert("Error", ex.Message, "OK"); }
+        catch (Exception ex) { await Alerta("Error", ex.Message); }
     }
 
     async void OnLlamar(object sender, EventArgs e)
@@ -58,35 +56,62 @@ public partial class AsistencialPage : ContentPage
                 new MySqlParameter("@t", t.idTurno));
             await CargarPendientes();
         }
-        catch (Exception ex) { b.IsEnabled = true; await DisplayAlert("Error", ex.Message, "OK"); }
+        catch (Exception ex) { b.IsEnabled = true; await Alerta("Error", ex.Message); }
     }
 
-    async void OnAtender(object sender, EventArgs e)
+
+    private async void OnAtender(object sender, EventArgs e)
     {
-        if (sender is not Button b || b.BindingContext is not TurnoImagen t) return;
+        if (sender is not Button b || b.BindingContext is not TurnoImagen t)
+            return;
+
         b.IsEnabled = false;
+
         try
         {
-            var res = await Db.Query("CALL AtenderTurnoImagen(@t)",
+            var resultado = (await Db.Query(
+                "CALL AtenderTurnoImagen(@t)",
                 r => r.GetName(0) == "mensaje"
-                    ? (false, r.GetString(0))
-                    : (true, $"N° {r.GetInt32(0)}\nPaciente: {r.GetString(1)}\nEstudio: {r.GetString(2)}\nAtendido: {r.GetDateTime(3):dd/MM/yyyy HH:mm}\nRetirar el informe a partir del: {r.GetDateTime(4):dd/MM/yyyy}"),
-                new MySqlParameter("@t", t.idTurno));
-            var (ok, texto) = res.First();
+                    ? (ok: false, texto: r.GetString(0))
+                    : (ok: true, texto:
+                        $"Comprobante N° {r.GetInt32(0)}\n" +
+                        $"Paciente: {r.GetString(1)}\n" +
+                        $"Estudio: {r.GetString(2)}\n" +
+                        $"Retirar el informe a partir del: {r.GetDateTime(4):dd/MM/yyyy}"),
+                new MySqlParameter("@t", t.idTurno)
+            )).FirstOrDefault();
 
-            await DisplayAlert(ok ? "Comprobante de retiro" : "No se pudo", texto, "OK");
+            if (resultado == default)
+                return;
+
+            await CargarTodo();
+
+            // Solo muestra el comprobante cuando la atención fue exitosa.
+            if (resultado.ok)
+            {
+                await DisplayAlert(
+                    "Atención registrada",
+                    resultado.texto,
+                    "Aceptar"
+                );
+            }
+        }
+        catch (Exception)
+        {
+            // No mostrar mensajes técnicos en pantalla.
             await CargarTodo();
         }
-        catch (Exception ex) { b.IsEnabled = true; await DisplayAlert("Error", ex.Message, "OK"); }
+        finally
+        {
+            b.IsEnabled = true;
+        }
     }
 
     private async void OnCerrarSesionClicked(object sender, EventArgs e)
     {
-        bool confirmar = await DisplayAlert("Cerrar Sesión", "¿Estás seguro de que deseas salir?", "Sí", "Cancelar");
+        bool confirmar = await Application.Current.Windows[0].Page.DisplayAlert("Cerrar Sesión", "¿Estás seguro de que deseas salir?", "Sí", "Cancelar");
         if (confirmar)
-        {
             Application.Current.MainPage = new NavigationPage(new LoginPage());
-        }
     }
 }
 
