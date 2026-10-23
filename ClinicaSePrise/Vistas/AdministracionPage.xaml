@@ -1,62 +1,125 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ent="clr-namespace:ClinicaSePrise.Entidades"
              x:Class="ClinicaSePrise.Vistas.AdministracionPage"
              Title="Panel de Administración"
              BackgroundColor="#F8FAFC">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión" 
-                  Clicked="OnCerrarSesionClicked" 
+        <ToolbarItem Text="🚪 Cerrar Sesión"
+                  Clicked="OnCerrarSesionClicked"
                   Order="Primary" />
     </ContentPage.ToolbarItems>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
-            <!-- Encabezado con Saludo Dinámico -->
-            <VerticalStackLayout Spacing="5">
-                <Label x:Name="lblBienvenida" 
-                       FontSize="14" 
-                       TextColor="Gray" 
-                       FontAttributes="Bold" />
+    <ContentPage.Resources>
+        <Style x:Key="Tarjeta" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="#E2E8F0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style x:Key="Titulo" TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#1E293B" />
+        </Style>
+        <Style x:Key="Ayuda" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextColor" Value="#64748B" />
+        </Style>
+    </ContentPage.Resources>
 
-                <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="18">
+
+            <VerticalStackLayout Spacing="4">
+                <Label x:Name="lblBienvenida" FontSize="14" TextColor="Gray" FontAttributes="Bold" />
+                <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A" />
+                <Label x:Name="lblPeriodo" Style="{StaticResource Ayuda}" />
             </VerticalStackLayout>
 
-            <!-- Liquidación de Honorarios a Médicos -->
-            <Frame Padding="15" CornerRadius="10">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="💰 Liquidación de Honorarios (Circuito A)" FontSize="18" FontAttributes="Bold" TextColor="#1E293B"/>
-                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="10">
-                        <Picker Grid.Column="0" Title="Seleccionar Médico" x:Name="pkMedicoHonorario"/>
-                        <Entry Grid.Column="1" Placeholder="Período (ej: Octubre 2026)"/>
-                        <Button Grid.Column="2" Text="Calcular Liquidación" BackgroundColor="#2563EB" TextColor="White"/>
+            <!-- Liquidación de honorarios -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Liquidación de honorarios" Style="{StaticResource Titulo}" />
+                    <Label Text="Al médico se le paga un porcentaje de lo cobrado por sus consultas en el mes."
+                           Style="{StaticResource Ayuda}" />
+                    <Grid ColumnDefinitions="*,100,Auto" ColumnSpacing="10">
+                        <Picker x:Name="pkMedicoHonorario" Title="Médico" ItemDisplayBinding="{Binding nombre}" />
+                        <Entry Grid.Column="1" x:Name="txtPorcentaje" Text="70" Keyboard="Numeric" Placeholder="%" />
+                        <Button Grid.Column="2" Text="Calcular" Clicked="OnCalcularHonorario" />
                     </Grid>
-                </VerticalStackLayout>
-            </Frame>
 
-            <!-- Resumen General / Métricas -->
-            <Label Text="Control General de la Clínica" FontSize="18" FontAttributes="Bold"/>
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
-                <Frame Grid.Column="0" BackgroundColor="#EFF6FF" Padding="15">
-                    <VerticalStackLayout HorizontalOptions="Center">
-                        <Label Text="Total Atendidos" FontSize="14"/>
-                        <Label Text="124" FontSize="24" FontAttributes="Bold" TextColor="#2563EB"/>
+                    <!-- Resultado del cálculo y detalle de las consultas -->
+                    <VerticalStackLayout x:Name="stCalculo" IsVisible="False" Spacing="6">
+                        <Label x:Name="lblCalculo" FontSize="13" />
+                        <VerticalStackLayout x:Name="stDetalle" Spacing="2">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="ent:ConsultaLiquidada">
+                                    <Label Text="{Binding Texto}" FontSize="12" TextColor="#334155" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button x:Name="btnRegistrarLiquidacion" Text="Registrar liquidación" BackgroundColor="#16A34A"
+                                TextColor="White" HorizontalOptions="Start" Clicked="OnRegistrarLiquidacion" />
                     </VerticalStackLayout>
-                </Frame>
-                <Frame Grid.Column="1" BackgroundColor="#F0FDF4" Padding="15">
-                    <VerticalStackLayout HorizontalOptions="Center">
-                        <Label Text="Recaudación Hoy" FontSize="14"/>
-                        <Label Text="$450,000" FontSize="24" FontAttributes="Bold" TextColor="#16A34A"/>
+
+                    <Label Text="Liquidaciones del mes" FontAttributes="Bold" Margin="0,8,0,0" />
+                    <VerticalStackLayout x:Name="stLiquidaciones" Spacing="4">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="ent:HonorarioLiquidado">
+                                <Label Text="{Binding Texto}" FontSize="13" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
-                </Frame>
-                <Frame Grid.Column="2" BackgroundColor="#FEF2F2" Padding="15">
-                    <VerticalStackLayout HorizontalOptions="Center">
-                        <Label Text="Insumos Críticos" FontSize="14"/>
-                        <Label Text="3" FontSize="24" FontAttributes="Bold" TextColor="#DC2626"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Gráficos del mes -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
+                <Border Grid.Column="0" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Pacientes atendidos por médico" FontAttributes="Bold" />
+                        <GraphicsView x:Name="gvAtendidos" />
                     </VerticalStackLayout>
-                </Frame>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Facturado por médico" FontAttributes="Bold" />
+                        <GraphicsView x:Name="gvFacturado" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource Tarjeta}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Turnos del mes por estado" FontAttributes="Bold" />
+                        <GraphicsView x:Name="gvEstados" />
+                    </VerticalStackLayout>
+                </Border>
             </Grid>
+
+            <!-- Faltas de médicos -->
+            <Border Style="{StaticResource Tarjeta}">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Faltas de médicos del mes" Style="{StaticResource Titulo}" />
+                        <VerticalStackLayout x:Name="stFaltas" Spacing="4">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="ent:AusenciaProfesional">
+                                    <Label Text="{Binding Texto}" FontSize="13" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" Spacing="8">
+                        <Label Text="Registrar una falta" FontAttributes="Bold" />
+                        <Picker x:Name="pkMedicoFalta" Title="Médico que faltó" ItemDisplayBinding="{Binding nombre}" />
+                        <DatePicker x:Name="dpFalta" Format="dd/MM/yyyy" />
+                        <Entry x:Name="txtMotivoFalta" Placeholder="Motivo (ej. licencia, congreso)" />
+                        <Button Text="Registrar falta" Clicked="OnRegistrarFalta" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
