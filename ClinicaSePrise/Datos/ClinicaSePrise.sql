@@ -132,6 +132,7 @@ CREATE TABLE Estudio (
     requiereAyuno BOOLEAN NOT NULL DEFAULT 0
 );
 
+-- estado (imágenes): Pendiente -> Llamado -> Atendido (o Cancelado)
 CREATE TABLE TurnoEstudio (
     idTurno INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     idPaciente INT,
@@ -139,6 +140,9 @@ CREATE TABLE TurnoEstudio (
     fechaHora DATETIME,
     modalidadSolicitud VARCHAR(50),
     requiereTurno BOOLEAN,
+    estado VARCHAR(20) NOT NULL DEFAULT 'Pendiente',
+    duracion INT NOT NULL DEFAULT 30,
+    fechaAtencion DATETIME NULL,
     FOREIGN KEY (idPaciente) REFERENCES Paciente(idPaciente),
     FOREIGN KEY (idEstudio) REFERENCES Estudio(idEstudio)
 );
@@ -841,12 +845,157 @@ END //
 DELIMITER ;
 
 -- =====================================================
+--  DIAGNÓSTICO POR IMÁGENES (circuito B, con turno)
+--  Paciente pide turno -> Asistencial lo ve Pendiente -> lo llama -> lo atiende
+--  Indicación previa = Estudio.requisitosPrevios
+-- =====================================================
+
+DELIMITER //
+
+-- PRÁCTICAS DE IMÁGENES (para el combo del paciente)
+CREATE PROCEDURE ListarPracticasImagen()
+BEGIN
+  SELECT idEstudio, nombre, requisitosPrevios, horarioEspecifico, responsable
+  FROM Estudio
+  WHERE especialidad = 'Diagnóstico por imágenes'
+  ORDER BY nombre;
+END //
+
+-- TURNOS DISPONIBLES: lunes a viernes, cada 30 min, de 7 a 17
+CREATE PROCEDURE TurnosDisponiblesImagen(IN p_idEstudio INT, IN p_fecha DATE)
+BEGIN
+  WITH RECURSIVE h AS (
+    SELECT TIMESTAMP(p_fecha, '07:00:00') AS f
+    UNION ALL
+    SELECT f + INTERVAL 30 MINUTE FROM h WHERE f < TIMESTAMP(p_fecha, '16:30:00')
+  )
+  SELECT f AS fechaHora, 30 AS duracion, 'Normal' AS tipo
+  FROM h
+  WHERE DAYOFWEEK(p_fecha) BETWEEN 2 AND 6
+    AND f > NOW()
+    AND NOT EXISTS (SELECT 1 FROM TurnoEstudio t
+                    WHERE t.idEstudio = p_idEstudio
+                      AND t.estado <> 'Cancelado'
+                      AND t.fechaHora = h.f)
+  ORDER BY f;
+END //
+
+-- AGENDAR TURNO DE IMAGEN (devuelve una fila solo si hay error)
+CREATE PROCEDURE AgendarTurnoImagen(IN p_idPaciente INT, IN p_idEstudio INT, IN p_fechaHora DATETIME)
+agenda: BEGIN
+  IF NOT EXISTS (SELECT 1 FROM Paciente WHERE idPaciente = p_idPaciente) THEN
+    SELECT 'Error: paciente no existe' AS mensaje;
+    LEAVE agenda;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM Estudio
+                 WHERE idEstudio = p_idEstudio AND especialidad = 'Diagnóstico por imágenes') THEN
+    SELECT 'Error: estudio no válido' AS mensaje;
+    LEAVE agenda;
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM TurnoEstudio
+             WHERE idEstudio = p_idEstudio AND fechaHora = p_fechaHora AND estado <> 'Cancelado') THEN
+    SELECT 'Error: ese horario ya fue tomado' AS mensaje;
+    LEAVE agenda;
+  END IF;
+
+  INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion)
+  VALUES (p_idPaciente, p_idEstudio, p_fechaHora, 'App', 1, 'Pendiente', 30);
+END agenda //
+
+-- ASISTENCIAL: TURNOS PENDIENTES (con la indicación de cada estudio)
+CREATE PROCEDURE ImagenesPendientes()
+BEGIN
+  SELECT t.idTurno,
+         CONCAT(p.nombre, ' ', p.apellido) AS paciente,
+         p.dni,
+         e.nombre AS estudio,
+         t.fechaHora,
+         COALESCE(e.requisitosPrevios, 'Sin requisitos') AS indicacion,
+         t.estado
+  FROM TurnoEstudio t
+  JOIN Paciente p ON p.idPaciente = t.idPaciente
+  JOIN Estudio e ON e.idEstudio = t.idEstudio
+  WHERE e.especialidad = 'Diagnóstico por imágenes'
+    AND t.estado IN ('Pendiente', 'Llamado')
+  ORDER BY t.fechaHora;
+END //
+
+-- ASISTENCIAL: LLAMAR AL PACIENTE
+CREATE PROCEDURE LlamarPacienteImagen(IN p_idTurno INT)
+BEGIN
+  UPDATE TurnoEstudio SET estado = 'Llamado'
+  WHERE idTurno = p_idTurno AND estado IN ('Pendiente', 'Llamado');
+  SELECT ROW_COUNT() AS llamado;
+END //
+
+-- ASISTENCIAL: ATENDER (descuenta insumos, comprobante de retiro a 7 días, pasa a Atendido)
+CREATE PROCEDURE AtenderTurnoImagen(IN p_idTurno INT)
+atender: BEGIN
+  DECLARE v_pac INT;
+  DECLARE v_est INT;
+  DECLARE v_com INT;
+
+  SELECT idPaciente, idEstudio INTO v_pac, v_est
+  FROM TurnoEstudio WHERE idTurno = p_idTurno AND estado = 'Llamado';
+
+  IF v_pac IS NULL THEN
+    SELECT 'Error: primero hay que llamar al paciente' AS mensaje;
+    LEAVE atender;
+  END IF;
+
+  START TRANSACTION;
+
+  UPDATE Insumo i
+  JOIN EstudioInsumo ei ON ei.idInsumo = i.idInsumo AND ei.idEstudio = v_est
+  SET i.stock = GREATEST(i.stock - ei.cantidad, 0),
+      i.estadoReposicion = IF(GREATEST(i.stock - ei.cantidad, 0) <= i.stockMinimo, 'Reposición', 'Disponible');
+
+  INSERT INTO Comprobante (idPaciente, idEstudio, fechaAtencion, comprobanteRetiro, fechaRetiro)
+  VALUES (v_pac, v_est, NOW(), 1, DATE_ADD(CURDATE(), INTERVAL 7 DAY));
+  SET v_com = LAST_INSERT_ID();
+
+  UPDATE TurnoEstudio SET estado = 'Atendido', fechaAtencion = NOW() WHERE idTurno = p_idTurno;
+  COMMIT;
+
+  SELECT c.idComprobante, CONCAT(p.nombre, ' ', p.apellido) AS paciente, e.nombre AS estudio,
+         c.fechaAtencion, c.fechaRetiro
+  FROM Comprobante c
+  JOIN Paciente p ON p.idPaciente = c.idPaciente
+  JOIN Estudio e ON e.idEstudio = c.idEstudio
+  WHERE c.idComprobante = v_com;
+END atender //
+
+-- ASISTENCIAL: ESTUDIOS ATENDIDOS HOY (con su indicación)
+CREATE PROCEDURE ImagenesAtendidosHoy()
+BEGIN
+  SELECT t.idTurno,
+         CONCAT(p.nombre, ' ', p.apellido) AS paciente,
+         p.dni,
+         e.nombre AS estudio,
+         t.fechaAtencion,
+         COALESCE(e.requisitosPrevios, 'Sin requisitos') AS indicacion
+  FROM TurnoEstudio t
+  JOIN Paciente p ON p.idPaciente = t.idPaciente
+  JOIN Estudio e ON e.idEstudio = t.idEstudio
+  WHERE e.especialidad = 'Diagnóstico por imágenes'
+    AND t.estado = 'Atendido'
+    AND DATE(t.fechaAtencion) = CURDATE()
+  ORDER BY t.fechaAtencion DESC;
+END //
+
+DELIMITER ;
+
+-- =====================================================
 --  PRUEBAS
 -- =====================================================
 
 -- CALL StockInsumos('Laboratorio');
 -- CALL StockInsumos('Diagnóstico por imágenes');
 -- CALL ReponerInsumo(2, 10);
+-- CALL ImagenesPendientes();
+-- CALL TurnosDisponiblesImagen(1, CURDATE());
 
 -- =====================================================
 --  RECEPCIÓN Y ADMINISTRACIÓN
@@ -1224,11 +1373,11 @@ INSERT INTO Turno (idPaciente, idProfesional, especialidad, fechaHora, tipoTurno
 (4, 4, 'Neurología', TIMESTAMP(CURDATE(), '11:00:00'), 'Normal', 40, 'App', 'Confirmado');
 
 INSERT INTO Estudio (idEstudio, nombre, especialidad, requisitosPrevios, horarioEspecifico, responsable, requiereAyuno) VALUES
-(1, 'Ecografía abdominal', 'Diagnóstico por imágenes', 'Ayuno 8 horas', '08:00-12:00', 'Sector Imágenes', 1),
+(1, 'Ecografía abdominal', 'Diagnóstico por imágenes', 'Ayuno de 8 horas', '08:00-12:00', 'Sector Imágenes', 1),
 (2, 'Resonancia magnética', 'Diagnóstico por imágenes', 'Sin objetos metálicos', '09:00-17:00', 'Sector Resonancia', 0),
 (3, 'Electrocardiograma', 'Cardiología', 'Sin requisitos', '08:00-14:00', 'Cardiología', 0),
 (4, 'Análisis de sangre', 'Laboratorio', 'Ayuno 12 horas', '07:00-11:00', 'Laboratorio Central', 1),
-(5, 'Radiografía de tórax', 'Diagnóstico por imágenes', 'Sin requisitos', '10:00-16:00', 'Sector Rayos X', 0),
+(5, 'Radiografía de tórax', 'Diagnóstico por imágenes', 'Sin requisitos previos', '10:00-16:00', 'Sector Rayos X', 0),
 -- Prácticas de laboratorio CON ayuno (7 a 11)
 (6, 'Glucemia', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
 (7, 'Colesterol total', 'Laboratorio', 'Ayuno 8 horas', '07:00-11:00', 'Laboratorio Central', 1),
@@ -1263,6 +1412,13 @@ INSERT INTO TurnoEstudio (idTurno, idPaciente, idEstudio, fechaHora, modalidadSo
 (3, 3, 3, '2026-10-13 09:30:00', 'App', 1),
 (4, 4, 4, '2026-10-14 08:00:00', 'Sistema', 0),
 (5, 5, 5, '2026-10-15 15:00:00', 'App', 1);
+UPDATE TurnoEstudio SET estado = 'Atendido', fechaAtencion = fechaHora WHERE idTurno > 0 AND fechaHora < CURDATE();
+
+-- Turnos de imágenes precargados (pendientes de atender)
+INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion) VALUES
+(1, 1, TIMESTAMP(CURDATE(), '15:00:00'), 'App', 1, 'Pendiente', 30),
+(2, 2, TIMESTAMP(CURDATE(), '16:00:00'), 'App', 1, 'Pendiente', 30),
+(3, 5, TIMESTAMP(CURDATE() + INTERVAL 1 DAY, '09:00:00'), 'App', 1, 'Pendiente', 30);
 
 INSERT INTO Agenda (idAgenda, idProfesional, especialidad, disponibilidad, diaSemana, horaDesde, horaHasta, duracionMinima, sobreturnosPermitidos, recordatorio) VALUES
 (1, 1, 'Cardiología', 'Lunes 9-12', 1, '09:00', '12:00', 30, 2, 1),
@@ -1360,6 +1516,9 @@ SELECT idEstudio, 8, 1 FROM Estudio WHERE idEstudio IN (17, 18, 22, 25);
 INSERT INTO EstudioInsumo (idEstudio, idInsumo, cantidad) VALUES (24, 9, 1);
 -- Frasco de orina / materia fecal
 INSERT INTO EstudioInsumo (idEstudio, idInsumo, cantidad) VALUES (19, 10, 1), (29, 10, 1), (30, 11, 1);
+
+-- Consumo de insumos por estudio de imágenes (gel, contraste, placas)
+INSERT INTO EstudioInsumo (idEstudio, idInsumo, cantidad) VALUES (1, 1, 1), (2, 2, 1), (5, 5, 1);
 
 -- Órdenes de laboratorio de ejemplo (ya acreditadas y pagas, esperando ser llamadas)
 INSERT INTO OrdenLab (idOrden, idPaciente, fechaIngreso, estado) VALUES
@@ -1484,3 +1643,8 @@ WHERE i.stock <= i.stockMinimo;
 
 -- Insumos de laboratorio después de atender
 -- SELECT nombre, stock, stockMinimo, estadoReposicion FROM Insumo WHERE idEstudio = 4;
+
+INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion) VALUES
+(1, 1, TIMESTAMP(CURDATE(), '15:00:00'), 'App', 1, 'Pendiente', 30),
+(2, 2, TIMESTAMP(CURDATE(), '16:00:00'), 'App', 1, 'Pendiente', 30),
+(3, 5, TIMESTAMP(CURDATE() + INTERVAL 1 DAY, '09:00:00'), 'App', 1, 'Pendiente', 30);

@@ -7,27 +7,65 @@
              BackgroundColor="#FAF5FF">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión" 
-                  Clicked="OnCerrarSesionClicked" 
+        <ToolbarItem Text="🚪 Cerrar Sesión"
+                  Clicked="OnCerrarSesionClicked"
                   Order="Primary" />
     </ContentPage.ToolbarItems>
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
-            <!-- Encabezado con Saludo Dinámico -->
             <VerticalStackLayout Spacing="5">
-                <Label x:Name="lblBienvenida" 
-                       FontSize="14" 
-                       TextColor="Gray" 
-                       FontAttributes="Bold" />
-
+                <Label x:Name="lblBienvenida" FontSize="14" TextColor="Gray" FontAttributes="Bold" />
                 <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
             </VerticalStackLayout>
 
             <Frame Padding="15">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Estudios Realizados Hoy" FontSize="18" FontAttributes="Bold"/>
-                    <CollectionView x:Name="cvEstudiosHoy" HeightRequest="200"/>
+                    <Label Text="Turnos pendientes de atender" FontSize="18" FontAttributes="Bold"/>
+                    <Label x:Name="SinPendientes" Text="No hay turnos pendientes." TextColor="Gray" IsVisible="False"/>
+                    <VerticalStackLayout x:Name="ListaPendientes" Spacing="8">
+                        <Label Text="{Binding estado, StringFormat='Estado: {0}'}" FontAttributes="Bold" TextColor="#2563EB"/>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="10" Stroke="#E9D5FF" StrokeThickness="1">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16"/>
+                                            <Label Text="{Binding paciente}"/>
+                                            <Label Text="{Binding dni, StringFormat='DNI {0}'}" TextColor="Gray"/>
+                                            <Label Text="{Binding fechaHora, StringFormat='{0:dd/MM/yyyy HH:mm}'}" TextColor="Gray"/>
+                                            <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="#6B21A8"/>
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                            <Button Text="Llamar" Clicked="OnLlamar" IsVisible="{Binding pendiente}"/>
+                                            <Button Text="Atender" Clicked="OnAtender" IsVisible="{Binding llamado}"/>
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Estudios atendidos hoy" FontSize="18" FontAttributes="Bold"/>
+                    <Label x:Name="SinAtendidos" Text="Todavía no se atendió ningún estudio hoy." TextColor="Gray" IsVisible="False"/>
+                    <VerticalStackLayout x:Name="ListaAtendidos" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="10" Stroke="#E9D5FF" StrokeThickness="1">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16"/>
+                                        <Label Text="{Binding paciente}"/>
+                                        <Label Text="{Binding fechaAtencion, StringFormat='Atendido a las {0:HH:mm}'}" TextColor="Gray"/>
+                                        <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="#6B21A8"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </Frame>
 

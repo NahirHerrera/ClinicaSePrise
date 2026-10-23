@@ -48,13 +48,12 @@
                 <VerticalStackLayout Spacing="12">
                     <Label Text="Solicitar turno" Style="{StaticResource Titulo}" />
 
-                    <!-- Selector para alternar entre Médico e Imágenes -->
                     <Label Text="Tipo de Atención" />
                     <Picker x:Name="pkTipoAtencion"
                             Title="Seleccioná el tipo de atención"
                             SelectedIndexChanged="OnTipoAtencionChanged" />
 
-                    <!-- SECCIÓN MÉDICA (Se muestra por defecto) -->
+                    <!-- SECCIÓN MÉDICA -->
                     <VerticalStackLayout x:Name="layoutMedico" Spacing="10">
                         <Label Text="Especialidad" />
                         <Picker x:Name="pkEspecialidad"
@@ -69,13 +68,18 @@
                         <DatePicker x:Name="dpFecha" DateSelected="BuscarSlots" />
                     </VerticalStackLayout>
 
-                    <!-- SECCIÓN DIAGNÓSTICO POR IMÁGENES (Oculta por defecto) -->
+                    <!-- SECCIÓN DIAGNÓSTICO POR IMÁGENES -->
                     <VerticalStackLayout x:Name="layoutImagen" Spacing="10" IsVisible="False">
                         <Label Text="Práctica / Estudio de Imágenes" />
                         <Picker x:Name="pkPracticaImagen"
                                 Title="Seleccioná un estudio"
                                 ItemDisplayBinding="{Binding nombre}"
-                                SelectedIndexChanged="BuscarSlotsImagen" />
+                                SelectedIndexChanged="OnPracticaImagenChanged" />
+
+                        <Label x:Name="lblIndicacion"
+                               TextColor="#6B21A8"
+                               FontAttributes="Bold"
+                               IsVisible="False" />
 
                         <Label Text="Fecha del estudio" />
                         <DatePicker x:Name="dpFechaImagen" DateSelected="BuscarSlotsImagen" />

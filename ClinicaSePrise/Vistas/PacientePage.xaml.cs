@@ -62,6 +62,14 @@ public partial class PacientePage : ContentPage
         if (SinSlots != null) SinSlots.IsVisible = false;
     }
 
+    void OnPracticaImagenChanged(object sender, EventArgs e)
+    {
+        if (pkPracticaImagen.SelectedItem is not Estudio estudio) return;
+        lblIndicacion.Text = $"Indicación: {estudio.requisitosPrevios}";
+        lblIndicacion.IsVisible = true;
+        BuscarSlotsImagen(this, EventArgs.Empty);
+    }
+
     async Task CargarTurnos()
     {
         try
@@ -181,9 +189,9 @@ public partial class PacientePage : ContentPage
 
         try
         {
-            var slots = await Db.Query("CALL TurnosDisponibles(@p, @f)",
+            var slots = await Db.Query("CALL TurnosDisponiblesImagen(@e, @f)",
                 r => new Slot(r.GetDateTime(0), Convert.ToInt32(r[1]), r.GetString(2)),
-                new MySqlParameter("@p", estudio.idEstudio), new MySqlParameter("@f", dpFechaImagen.Date));
+                new MySqlParameter("@e", estudio.idEstudio), new MySqlParameter("@f", dpFechaImagen.Date));
 
             BindableLayout.SetItemsSource(ListaSlots, slots);
             if (SinSlots != null) SinSlots.IsVisible = slots.Count == 0;
@@ -198,19 +206,16 @@ public partial class PacientePage : ContentPage
         if (_esTurnoImagen)
         {
             if (pkPracticaImagen?.SelectedItem is not Estudio estudio) return;
-            if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Confirmar Estudio", $"Estudio: {estudio.nombre}\nFecha: {s.fechaHora:dd/MM/yyyy HH:mm}", "Reservar", "Volver")) return;
+            if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Confirmar Estudio", $"Estudio: {estudio.nombre}\nFecha: {s.fechaHora:dd/MM/yyyy HH:mm}\nIndicación: {estudio.requisitosPrevios}", "Reservar", "Volver")) return;
 
             try
             {
-                var error = await Db.Query("CALL AgendarTurno(@a,@b,@c,@d,@f)", r => r.GetString(0),
+                var error = await Db.Query("CALL AgendarTurnoImagen(@a,@b,@d)", r => r.GetString(0),
                     new MySqlParameter("@a", Sesion.IdPaciente),
                     new MySqlParameter("@b", estudio.idEstudio),
-                    new MySqlParameter("@c", estudio.nombre),
-                    new MySqlParameter("@d", s.fechaHora),
-                    new MySqlParameter("@f", s.duracion));
+                    new MySqlParameter("@d", s.fechaHora));
 
                 await Application.Current!.Windows[0].Page!.DisplayAlertAsync(error.Count == 0 ? "Listo" : "No se pudo", error.Count == 0 ? "Estudio reservado con éxito." : error[0], "OK");
-                await CargarTurnos();
                 BuscarSlotsImagen(this, EventArgs.Empty);
             }
             catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
