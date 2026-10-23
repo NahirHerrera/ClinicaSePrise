@@ -153,8 +153,8 @@
 
                     <VerticalStackLayout Spacing="8">
                         <Label Text="4. Stock de insumos (se descuenta al atender)" FontSize="20" FontAttributes="Bold" TextColor="Grey"/>
-                        <vistas:StockPage x:Name="stock" Sector="Laboratorio" TextColor="Grey"/>
-                    </VerticalStackLayout>
+                        <vistas:StockPage x:Name="stock" Sector="Laboratorio"/>
+                    </VerticalStackLayout> 
 
                 </VerticalStackLayout>
             </Grid>
