@@ -77,6 +77,16 @@
                                 ItemDisplayBinding="{Binding nombre}"
                                 SelectedIndexChanged="BuscarSlotsImagen" />
 
+                        <!-- INDICACIONES DEL ESTUDIO (informativo) -->
+                        <Border x:Name="boxIndicaciones"
+                                IsVisible="False"
+                                BackgroundColor="#EFF6FF"
+                                Stroke="#BFDBFE"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12">
+                            <Label x:Name="lblIndicaciones" TextColor="#1E40AF" />
+                        </Border>
+
                         <Label Text="Fecha del estudio" />
                         <DatePicker x:Name="dpFechaImagen" DateSelected="BuscarSlotsImagen" />
                     </VerticalStackLayout>

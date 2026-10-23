@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vistas="clr-namespace:ClinicaSePrise.Vistas"
+             xmlns:e="clr-namespace:ClinicaSePrise.Entidades"
              x:Class="ClinicaSePrise.Vistas.AsistencialPage"
              Title="Servicios Asistenciales y Diagnóstico"
              BackgroundColor="#FAF5FF">
@@ -14,7 +15,7 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
-            <!-- Encabezado con Saludo Dinámico -->
+            <!-- Encabezado -->
             <VerticalStackLayout Spacing="5">
                 <Label x:Name="lblBienvenida" 
                        FontSize="14" 
@@ -24,13 +25,74 @@
                 <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
             </VerticalStackLayout>
 
+            <!-- TURNOS PENDIENTES DE ATENDER -->
             <Frame Padding="15">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Estudios Realizados Hoy" FontSize="18" FontAttributes="Bold"/>
-                    <CollectionView x:Name="cvEstudiosHoy" HeightRequest="200"/>
+                    <Label Text="Turnos pendientes de atender" FontSize="18" FontAttributes="Bold"/>
+
+                    <VerticalStackLayout x:Name="ListaPendientes" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="e:TurnoImagen">
+                                <Border BackgroundColor="#F8FAFC" Stroke="#E8EBF0" StrokeShape="RoundRectangle 12" Padding="14">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding estudio}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding paciente}" TextColor="#64748B" />
+                                            <Label Text="{Binding Fecha}" TextColor="#64748B" />
+                                            <Label Text="{Binding indicaciones}" TextColor="#1E40AF" FontSize="12" />
+                                        </VerticalStackLayout>
+
+                                        <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                            <Label Text="{Binding estado}" FontAttributes="Bold" TextColor="#6B21A8" HorizontalOptions="End" />
+                                            <Button Text="Llamar"
+                                                    Clicked="Llamar_Clicked"
+                                                    IsVisible="{Binding PuedeLlamar}"
+                                                    BackgroundColor="White"
+                                                    TextColor="#6B21A8"
+                                                    BorderColor="#6B21A8"
+                                                    BorderWidth="1"
+                                                    CornerRadius="12" />
+                                            <Button Text="Atender"
+                                                    Clicked="Atender_Clicked"
+                                                    IsVisible="{Binding PuedeAtender}"
+                                                    BackgroundColor="#6B21A8"
+                                                    TextColor="White"
+                                                    CornerRadius="12" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Label x:Name="SinPendientes" Text="No hay turnos pendientes." TextColor="#64748B" IsVisible="False" />
                 </VerticalStackLayout>
             </Frame>
 
+            <!-- ESTUDIOS REALIZADOS HOY -->
+            <Frame Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Estudios Realizados Hoy" FontSize="18" FontAttributes="Bold"/>
+                    <CollectionView x:Name="cvEstudiosHoy">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="e:TurnoImagen">
+                                <Border BackgroundColor="#F8FAFC" Stroke="#E8EBF0" StrokeShape="RoundRectangle 12" Padding="14" Margin="0,0,0,8">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Spacing="2">
+                                            <Label Text="{Binding estudio}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding paciente}" TextColor="#64748B" />
+                                            <Label Text="{Binding Fecha}" TextColor="#64748B" />
+                                        </VerticalStackLayout>
+                                        <Label Text="{Binding estado}" Grid.Column="1" FontAttributes="Bold" TextColor="#16A34A" VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- STOCK DE INSUMOS -->
             <Frame Padding="15">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold"/>

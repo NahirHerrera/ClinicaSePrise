@@ -7,6 +7,7 @@ namespace ClinicaSePrise.Vistas;
 public partial class PacientePage : ContentPage
 {
     private bool _esTurnoImagen = false;
+    private readonly Dictionary<int, string> _indicaciones = new();
 
     public PacientePage()
     {
@@ -124,18 +125,11 @@ public partial class PacientePage : ContentPage
         try
         {
             if (pkPracticaImagen != null)
-            {
-                var lista = await Db.Query("CALL ListarPracticasImagen()",
-                    r => new Estudio(
-                        r.GetInt32(0),
-                        r.GetString(1),
-                        "Diagnóstico por imágenes",
-                        r.IsDBNull(2) ? "" : r.GetString(2),
-                        "",
-                        r.IsDBNull(4) ? "" : r.GetString(4)
-                    ));
-                pkPracticaImagen.ItemsSource = lista;
-            }
+                pkPracticaImagen.ItemsSource = await Db.Query("CALL EstudiosConAgenda()", r =>
+                {
+                    _indicaciones[r.GetInt32(0)] = r.IsDBNull(2) ? "" : r.GetString(2);
+                    return new Estudio(r.GetInt32(0), r.GetString(1), "Diagnóstico por imágenes", "", "", "");
+                });
         }
         catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
     }
@@ -179,9 +173,13 @@ public partial class PacientePage : ContentPage
         if (!_esTurnoImagen) return;
         if (pkPracticaImagen?.SelectedItem is not Estudio estudio) return;
 
+        var ind = _indicaciones.GetValueOrDefault(estudio.idEstudio, "");
+        lblIndicaciones.Text = $"Indicaciones: {ind}";
+        boxIndicaciones.IsVisible = ind != "";
+
         try
         {
-            var slots = await Db.Query("CALL TurnosDisponibles(@p, @f)",
+            var slots = await Db.Query("CALL TurnosEstudioDisponibles(@p, @f)",
                 r => new Slot(r.GetDateTime(0), Convert.ToInt32(r[1]), r.GetString(2)),
                 new MySqlParameter("@p", estudio.idEstudio), new MySqlParameter("@f", dpFechaImagen.Date));
 
@@ -198,16 +196,14 @@ public partial class PacientePage : ContentPage
         if (_esTurnoImagen)
         {
             if (pkPracticaImagen?.SelectedItem is not Estudio estudio) return;
-            if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Confirmar Estudio", $"Estudio: {estudio.nombre}\nFecha: {s.fechaHora:dd/MM/yyyy HH:mm}", "Reservar", "Volver")) return;
+            if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Confirmar Estudio", $"{estudio.nombre.Split(" (")[0]} · {s.fechaHora:dd/MM/yyyy HH:mm}", "Reservar", "Volver")) return;
 
             try
             {
-                var error = await Db.Query("CALL AgendarTurno(@a,@b,@c,@d,@f)", r => r.GetString(0),
+                var error = await Db.Query("CALL AgendarTurnoEstudio(@a,@b,@c)", r => r.GetString(0),
                     new MySqlParameter("@a", Sesion.IdPaciente),
                     new MySqlParameter("@b", estudio.idEstudio),
-                    new MySqlParameter("@c", estudio.nombre),
-                    new MySqlParameter("@d", s.fechaHora),
-                    new MySqlParameter("@f", s.duracion));
+                    new MySqlParameter("@c", s.fechaHora));
 
                 await Application.Current!.Windows[0].Page!.DisplayAlertAsync(error.Count == 0 ? "Listo" : "No se pudo", error.Count == 0 ? "Estudio reservado con éxito." : error[0], "OK");
                 await CargarTurnos();
@@ -240,7 +236,8 @@ public partial class PacientePage : ContentPage
         if (sender is not Button btn || btn.BindingContext is not Turno t) return;
         if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Cancelar turno", $"¿Cancelar el turno de {t.especialidad}?", "Sí", "No")) return;
 
-        var ok = (await Db.Query("CALL CancelarTurno(@t,@p)", r => Convert.ToInt32(r[0]),
+        var proc = t.tipoTurno == "Estudio" ? "CancelarTurnoEstudio" : "CancelarTurno";
+        var ok = (await Db.Query($"CALL {proc}(@t,@p)", r => Convert.ToInt32(r[0]),
             new MySqlParameter("@t", t.idTurno), new MySqlParameter("@p", Sesion.IdPaciente))).First() == 1;
 
         await Application.Current!.Windows[0].Page!.DisplayAlertAsync(ok ? "Listo" : "No se pudo", ok ? "Turno cancelado." : "Ese turno ya no se puede cancelar.", "OK");
