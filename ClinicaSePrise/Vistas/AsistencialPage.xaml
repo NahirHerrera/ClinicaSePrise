@@ -19,7 +19,7 @@
                 <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
             </VerticalStackLayout>
 
-            <Frame Padding="15">
+            <Frame Padding="15" BackgroundColor="Transparent">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Turnos pendientes de atender" FontSize="18" FontAttributes="Bold"/>
                     <Label x:Name="SinPendientes" Text="No hay turnos pendientes." TextColor="Gray" IsVisible="False"/>
@@ -30,8 +30,8 @@
                                 <Border Padding="10" Stroke="#E9D5FF" StrokeThickness="1">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16"/>
-                                            <Label Text="{Binding paciente}"/>
+                                            <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16" TextColor="Grey"/>
+                                            <Label Text="{Binding paciente}" TextColor="Grey"/>
                                             <Label Text="{Binding dni, StringFormat='DNI {0}'}" TextColor="Gray"/>
                                             <Label Text="{Binding fechaHora, StringFormat='{0:dd/MM/yyyy HH:mm}'}" TextColor="Gray"/>
                                             <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="#6B21A8"/>
@@ -48,17 +48,17 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <Frame Padding="15">
+            <Frame Padding="15" BackgroundColor="Transparent">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Estudios atendidos hoy" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Estudios atendidos hoy" FontSize="18" FontAttributes="Bold" TextColor="Grey"/>
                     <Label x:Name="SinAtendidos" Text="Todavía no se atendió ningún estudio hoy." TextColor="Gray" IsVisible="False"/>
                     <VerticalStackLayout x:Name="ListaAtendidos" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
                                 <Border Padding="10" Stroke="#E9D5FF" StrokeThickness="1">
                                     <VerticalStackLayout Spacing="2">
-                                        <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16"/>
-                                        <Label Text="{Binding paciente}"/>
+                                        <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16" TextColor="Grey"/>
+                                        <Label Text="{Binding paciente}" TextColor="Grey"/>
                                         <Label Text="{Binding fechaAtencion, StringFormat='Atendido a las {0:HH:mm}'}" TextColor="Gray"/>
                                         <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="#6B21A8"/>
                                     </VerticalStackLayout>
@@ -69,9 +69,9 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <Frame Padding="15">
+            <Frame Padding="15" BackgroundColor="Transparent">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold" TextColor="Grey"/>
                     <vistas:StockPage x:Name="stock" Sector="Diagnóstico por imágenes" />
                 </VerticalStackLayout>
             </Frame>
