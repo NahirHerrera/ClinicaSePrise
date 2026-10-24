@@ -10,10 +10,102 @@ public partial class Guardia_InternacionPage : ContentPage
     {
         InitializeComponent();
         Derivaciones.ItemsSource = CargarDerivaciones();
+        CargarEstudiosEnPicker();
     }
-    private void OnEmitirDerivacionClicked(object sender, EventArgs e)
+    private async void OnEmitirDerivacionClicked(object sender, EventArgs e)
     {
-        // Método que responde al botón de emitir derivación
+        var dni = EntryDNI.Text?.Trim();
+        var origen = PickerOrigen.SelectedItem as string;
+        var estudio = PickerEstudio.SelectedItem as Estudio;
+
+        if (string.IsNullOrWhiteSpace(dni))
+        {
+            await Avisos.Mostrar("Error", "Ingrese el DNI del paciente.");
+            return;
+        }
+        if (origen == null)
+        {
+            await Avisos.Mostrar("Error", "Seleccione el origen.");
+            return;
+        }
+        if (estudio == null)
+        {
+            await Avisos.Mostrar("Error", "Seleccione el estudio.");
+            return;
+        }
+
+        try
+        {
+            InsertarDerivacion(dni, origen, estudio.idEstudio);
+
+            EntryDNI.Text = string.Empty;
+            PickerOrigen.SelectedItem = null;
+            PickerEstudio.SelectedItem = null;
+            Derivaciones.ItemsSource = CargarDerivaciones();
+
+            await Avisos.Mostrar("Éxito", "Derivación creada correctamente.");
+        }
+        catch (MySqlException mex)
+        {
+            await Avisos.Mostrar("Error", mex.Message);
+        }
+        catch (Exception ex)
+        {
+            await Avisos.Mostrar("Error", ex.Message);
+        }
+    }
+    private void InsertarDerivacion(string dni, string origen, int idEstudio)
+    {
+        using var conn = Conexion.getInstancia().CrearConexion();
+        conn.Open();
+
+        using var cmd = new MySqlCommand("CrearDerivacion", conn)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
+        cmd.Parameters.AddWithValue("p_dni", dni);
+        cmd.Parameters.AddWithValue("p_origen", origen);
+        cmd.Parameters.AddWithValue("p_idEstudio", idEstudio);
+        cmd.Parameters.AddWithValue("p_estado", "Pendiente");
+        cmd.ExecuteNonQuery();
+    }
+
+    private void CargarEstudiosEnPicker()
+    {
+        try
+        {
+            PickerEstudio.ItemsSource = CargarEstudios();
+        }
+        catch (Exception ex)
+        {
+            PickerEstudio.Title = "Error al cargar estudios: " + ex.Message;
+        }
+    }
+
+    private List<Estudio> CargarEstudios()
+    {
+        var lista = new List<Estudio>();
+        var conexion = Conexion.getInstancia();
+
+        using var conn = conexion.CrearConexion();
+        conn.Open();
+
+        using var cmd = new MySqlCommand("ListaEstudios", conn)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            lista.Add(new Estudio
+            {
+                idEstudio = reader.GetInt32(reader.GetOrdinal("idEstudio")),
+                nombre = reader.GetString(reader.GetOrdinal("nombre"))
+            });
+        }
+
+        return lista;
     }
 
     private List<Derivacion> CargarDerivaciones()

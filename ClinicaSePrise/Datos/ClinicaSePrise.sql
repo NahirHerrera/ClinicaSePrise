@@ -844,6 +844,43 @@ DELIMITER ;
 --  DERIVACIÓN
 -- =====================================================
 
+-- CREAR DERIVACION
+
+DELIMITER //
+
+CREATE PROCEDURE CrearDerivacion(
+    IN p_dni VARCHAR(50),
+    IN p_origen VARCHAR(50),
+    IN p_idEstudio INT,
+    IN p_estado VARCHAR(50)
+)
+BEGIN
+    DECLARE v_count INT;
+    DECLARE v_idPaciente INT;
+
+
+    SELECT COUNT(*) INTO v_count FROM Paciente WHERE TRIM(dni) = TRIM(p_dni);
+    IF v_count = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Paciente no encontrado';
+    ELSEIF v_count > 1 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DNI duplicado: contacte al administrador';
+    END IF;
+
+    SELECT idPaciente INTO v_idPaciente FROM Paciente WHERE TRIM(dni) = TRIM(p_dni) LIMIT 1;
+
+    SELECT COUNT(*) INTO v_count FROM Estudio WHERE idEstudio = p_idEstudio;
+    IF v_count = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Estudio no encontrado';
+    END IF;
+
+    -- Insertar la derivación
+    INSERT INTO Derivacion (idPaciente, origen, idEstudio, estado)
+    VALUES (v_idPaciente, p_origen, p_idEstudio, p_estado);
+END //
+
+DELIMITER ;
+
+-- LISTA DERIVACION
 
 DELIMITER //
 CREATE PROCEDURE ListaDerivaciones()
@@ -856,13 +893,37 @@ BEGIN
         d.origen,
         d.idEstudio,
         COALESCE(e.nombre, '') AS EstudioNombre,
-        d.estado,
-        d.idDerivacion AS FechaPlaceholder
+        d.estado
     FROM Derivacion d
     LEFT JOIN Paciente p ON d.idPaciente = p.idPaciente
     LEFT JOIN Estudio e ON d.idEstudio = e.idEstudio
     ORDER BY d.idDerivacion DESC;
 END //
+DELIMITER ;
+
+
+-- =====================================================
+--  ESTUDIOS
+-- =====================================================
+
+-- LISTA ESTUDIOS
+
+DELIMITER //
+
+CREATE PROCEDURE ListaEstudios()
+BEGIN
+    SELECT
+        idEstudio,
+        nombre,
+        especialidad,
+        requisitosPrevios,
+        horarioEspecifico,
+        responsable,
+        requiereAyuno
+    FROM Estudio
+    ORDER BY nombre;
+END //
+
 DELIMITER ;
 
 
