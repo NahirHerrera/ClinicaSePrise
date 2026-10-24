@@ -815,6 +815,33 @@ atender: BEGIN
 END atender //
 DELIMITER ; 
 
+
+-- =====================================================
+--  DERIVACIÓN
+-- =====================================================
+
+
+DELIMITER //
+CREATE PROCEDURE ListaDerivaciones()
+BEGIN
+    SELECT 
+        d.idDerivacion,
+        d.idPaciente,
+        p.nombre AS Nombre,
+        p.apellido AS Apellido,
+        d.origen,
+        d.idEstudio,
+        COALESCE(e.nombre, '') AS EstudioNombre,
+        d.estado,
+        d.idDerivacion AS FechaPlaceholder
+    FROM Derivacion d
+    LEFT JOIN Paciente p ON d.idPaciente = p.idPaciente
+    LEFT JOIN Estudio e ON d.idEstudio = e.idEstudio
+    ORDER BY d.idDerivacion DESC;
+END //
+DELIMITER ;
+
+
 -- =====================================================
 --  CONTROL DE STOCK (Laboratorio e Imágenes)
 -- =====================================================

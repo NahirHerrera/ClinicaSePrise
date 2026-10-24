@@ -2,18 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.Guardia_InternacionPage"
-             Title="Guardia e Internación"
              BackgroundColor="#FEF2F2">
-
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión" 
-                 Clicked="OnCerrarSesionClicked" 
-                 Order="Primary" />
-    </ContentPage.ToolbarItems>
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
-            <!-- Encabezado con Saludo Dinámico -->
             <VerticalStackLayout Spacing="5">
                 <Label x:Name="lblBienvenida" 
                        FontSize="14" 
@@ -47,9 +39,37 @@
                             <x:String>Electrocardiograma</x:String>
                         </Picker.Items>
                     </Picker>
-                    <Button Text="Emitir Derivación Urgente" BackgroundColor="#DC2626" TextColor="White" Clicked="OnEmitirDerivacionClicked"/>
+                    <Button Text="Emitir Derivación Urgente" BackgroundColor="#DC2626" TextColor="White"/>
                 </VerticalStackLayout>
             </Frame>
+
+
+            <Frame CornerRadius="10" Padding="10" BackgroundColor="{AppThemeBinding Light=White, Dark=LightGrey}">
+                <VerticalStackLayout>
+                    <Label Text="Derivaciones" FontSize="16" FontAttributes="Bold" TextColor="DimGrey" />
+                    <CollectionView x:Name="Derivaciones" ItemsLayout="VerticalList">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <StackLayout>
+                                    <VerticalStackLayout Spacing="4" Padding="10">
+                                        <Label Text="{Binding NombreCompleto}" FontSize="13" TextColor="Black"/>
+                                        <HorizontalStackLayout Spacing="12">
+                                            <Label Text="Origen:" FontAttributes="Bold" FontSize="12" TextColor="Grey"/>
+                                            <Label Text="{Binding Origen}" FontSize="12" TextColor="Grey"/>
+                                            <Label Text="Estudio:" FontAttributes="Bold" FontSize="12" Margin="10,0,0,0" TextColor="Grey"/>
+                                            <Label Text="{Binding EstudioNombre}" FontSize="12" TextColor="Grey"/>
+                                            <Label Text="{Binding Estado}" FontSize="12" TextColor="Black"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                    <BoxView HeightRequest="10" BackgroundColor="#E0E0E0" HorizontalOptions="Fill" Margin="10,0"/>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
