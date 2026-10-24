@@ -19,9 +19,11 @@
                    BackgroundColor="{AppThemeBinding Light=LightGrey, Dark=LightGrey}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Nueva Derivación de Guardia/Internación" FontSize="16" FontAttributes="Bold"/>
-                    <Entry Placeholder="DNI o N° Historia Clínica del Paciente"/>
-                    <Picker Title="Origen de Derivación"
+                    <Entry x:Name="EntryDNI" Placeholder="DNI del paciente" Keyboard="Numeric" TextColor="Black"/>
+                    <Picker x:Name="PickerOrigen"
+                            Title="Origen de Derivación"
                             TitleColor="Black"
+                            TextColor="Black"
                             BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}">
                         <Picker.Items>
                             <x:String>Guardia Médica</x:String>
@@ -29,17 +31,12 @@
                             <x:String>UTI</x:String>
                         </Picker.Items>
                     </Picker>
-                    <Picker Title="Estudio Solicitado (Circuito B)"
+                    <Picker x:Name="PickerEstudio"
+                            Title="Estudio Solicitado (Circuito B)"
                             TitleColor="Black"
-                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}">
-                        <Picker.Items>
-                            <x:String>Laboratorio de Sangre Urgente</x:String>
-                            <x:String>Radiografía de Tórax</x:String>
-                            <x:String>Ecografía Abdominal</x:String>
-                            <x:String>Electrocardiograma</x:String>
-                        </Picker.Items>
-                    </Picker>
-                    <Button Text="Emitir Derivación Urgente" BackgroundColor="#DC2626" TextColor="White"/>
+                            TextColor="Black"
+                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}"/>
+                    <Button Text="Emitir Derivación Urgente" BackgroundColor="#DC2626" TextColor="White" Clicked="OnEmitirDerivacionClicked"/>
                 </VerticalStackLayout>
             </Frame>
 

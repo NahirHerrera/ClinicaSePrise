@@ -17,7 +17,7 @@ namespace ClinicaSePrise.Entidades
         public string NombreCompleto => $"{Nombre} {Apellido}";
 
         public Derivacion() { }
-        public Derivacion(int idDerivacion, int? idPaciente, string origen, int? idEstudio, string estado, DateTime fecha)
+        public Derivacion(int idDerivacion, int? idPaciente, string origen, int? idEstudio, string estado)
         {
             IdDerivacion = idDerivacion;
             IdPaciente = idPaciente;
