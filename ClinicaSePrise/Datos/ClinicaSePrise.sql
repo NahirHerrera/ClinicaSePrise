@@ -589,7 +589,19 @@ BEGIN
   FROM Turno t
   JOIN Profesional p ON p.idProfesional = t.idProfesional
   WHERE t.idPaciente = p_idPaciente
-  ORDER BY t.fechaHora DESC;
+
+  UNION ALL
+
+  -- Estudios de imágenes (tipoTurno = 'Estudio' para distinguirlos al cancelar)
+  SELECT te.idTurno, te.idPaciente, 0, e.nombre, te.fechaHora,
+         'Estudio', te.duracion, te.modalidadSolicitud, te.estado,
+         'Servicio de Imágenes'
+  FROM TurnoEstudio te
+  JOIN Estudio e ON e.idEstudio = te.idEstudio
+  WHERE te.idPaciente = p_idPaciente
+    AND e.especialidad = 'Diagnóstico por imágenes'
+
+  ORDER BY fechaHora DESC;
 END //
 DELIMITER ;
 
@@ -601,6 +613,18 @@ BEGIN
   UPDATE Turno SET estado = 'Cancelado'
   WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
     AND estado IN ('Pendiente','Confirmado') AND fechaHora > NOW();
+  SELECT ROW_COUNT() AS cancelado;
+END //
+DELIMITER ;
+
+-- CANCELAR TURNO DE IMAGEN
+
+DELIMITER //
+CREATE PROCEDURE CancelarTurnoImagen(IN p_idTurno INT, IN p_idPaciente INT)
+BEGIN
+  UPDATE TurnoEstudio SET estado = 'Cancelado'
+  WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
+    AND estado = 'Pendiente' AND fechaHora > NOW();
   SELECT ROW_COUNT() AS cancelado;
 END //
 DELIMITER ;
@@ -1643,8 +1667,3 @@ WHERE i.stock <= i.stockMinimo;
 
 -- Insumos de laboratorio después de atender
 -- SELECT nombre, stock, stockMinimo, estadoReposicion FROM Insumo WHERE idEstudio = 4;
-
-INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion) VALUES
-(1, 1, TIMESTAMP(CURDATE(), '15:00:00'), 'App', 1, 'Pendiente', 30),
-(2, 2, TIMESTAMP(CURDATE(), '16:00:00'), 'App', 1, 'Pendiente', 30),
-(3, 5, TIMESTAMP(CURDATE() + INTERVAL 1 DAY, '09:00:00'), 'App', 1, 'Pendiente', 30);

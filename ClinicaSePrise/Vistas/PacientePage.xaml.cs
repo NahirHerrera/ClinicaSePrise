@@ -216,6 +216,7 @@ public partial class PacientePage : ContentPage
                     new MySqlParameter("@d", s.fechaHora));
 
                 await Application.Current!.Windows[0].Page!.DisplayAlertAsync(error.Count == 0 ? "Listo" : "No se pudo", error.Count == 0 ? "Estudio reservado con éxito." : error[0], "OK");
+                await CargarTurnos();
                 BuscarSlotsImagen(this, EventArgs.Empty);
             }
             catch (Exception ex) { await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Error", ex.Message, "OK"); }
@@ -245,7 +246,8 @@ public partial class PacientePage : ContentPage
         if (sender is not Button btn || btn.BindingContext is not Turno t) return;
         if (!await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Cancelar turno", $"¿Cancelar el turno de {t.especialidad}?", "Sí", "No")) return;
 
-        var ok = (await Db.Query("CALL CancelarTurno(@t,@p)", r => Convert.ToInt32(r[0]),
+        var proc = t.tipoTurno == "Estudio" ? "CancelarTurnoImagen" : "CancelarTurno";
+        var ok = (await Db.Query($"CALL {proc}(@t,@p)", r => Convert.ToInt32(r[0]),
             new MySqlParameter("@t", t.idTurno), new MySqlParameter("@p", Sesion.IdPaciente))).First() == 1;
 
         await Application.Current!.Windows[0].Page!.DisplayAlertAsync(ok ? "Listo" : "No se pudo", ok ? "Turno cancelado." : "Ese turno ya no se puede cancelar.", "OK");
