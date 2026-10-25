@@ -589,7 +589,19 @@ BEGIN
   FROM Turno t
   JOIN Profesional p ON p.idProfesional = t.idProfesional
   WHERE t.idPaciente = p_idPaciente
-  ORDER BY t.fechaHora DESC;
+
+  UNION ALL
+
+  -- Estudios de imágenes (tipoTurno = 'Estudio' para distinguirlos al cancelar)
+  SELECT te.idTurno, te.idPaciente, 0, e.nombre, te.fechaHora,
+         'Estudio', te.duracion, te.modalidadSolicitud, te.estado,
+         'Servicio de Imágenes'
+  FROM TurnoEstudio te
+  JOIN Estudio e ON e.idEstudio = te.idEstudio
+  WHERE te.idPaciente = p_idPaciente
+    AND e.especialidad = 'Diagnóstico por imágenes'
+
+  ORDER BY fechaHora DESC;
 END //
 DELIMITER ;
 
@@ -601,6 +613,18 @@ BEGIN
   UPDATE Turno SET estado = 'Cancelado'
   WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
     AND estado IN ('Pendiente','Confirmado') AND fechaHora > NOW();
+  SELECT ROW_COUNT() AS cancelado;
+END //
+DELIMITER ;
+
+-- CANCELAR TURNO DE IMAGEN (solo si todavía no pagó)
+
+DELIMITER //
+CREATE PROCEDURE CancelarTurnoImagen(IN p_idTurno INT, IN p_idPaciente INT)
+BEGIN
+  UPDATE TurnoEstudio SET estado = 'Cancelado'
+  WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
+    AND estado = 'Por acreditar' AND fechaHora > NOW();
   SELECT ROW_COUNT() AS cancelado;
 END //
 DELIMITER ;
@@ -901,7 +925,7 @@ agenda: BEGIN
   END IF;
 
   INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion)
-  VALUES (p_idPaciente, p_idEstudio, p_fechaHora, 'App', 1, 'Pendiente', 30);
+  VALUES (p_idPaciente, p_idEstudio, p_fechaHora, 'App', 1, 'Por acreditar', 30);
 END agenda //
 
 -- ASISTENCIAL: TURNOS PENDIENTES (con la indicación de cada estudio)
@@ -1309,165 +1333,12 @@ END //
 
 DELIMITER ;
 
--- CONEXION TURNOS IMAGENES CON RECEPCION Y ASISTENCIAL 
-
-DROP PROCEDURE IF EXISTS MisTurnos;
-DROP PROCEDURE IF EXISTS CancelarTurnoImagen;
-
-DELIMITER //
-CREATE PROCEDURE MisTurnos(IN p_idPaciente INT)
-BEGIN
-  SELECT t.idTurno, t.idPaciente, t.idProfesional, t.especialidad, t.fechaHora,
-         t.tipoTurno, t.duracion, t.modalidadSolicitud, t.estado,
-         CONCAT(p.nombre,' ',p.apellido) AS nombreProfesional
-  FROM Turno t
-  JOIN Profesional p ON p.idProfesional = t.idProfesional
-  WHERE t.idPaciente = p_idPaciente
-
-  UNION ALL
-
-  SELECT te.idTurno, te.idPaciente, 0, e.nombre, te.fechaHora,
-         'Estudio', te.duracion, te.modalidadSolicitud, te.estado,
-         'Servicio de Imágenes'
-  FROM TurnoEstudio te
-  JOIN Estudio e ON e.idEstudio = te.idEstudio
-  WHERE te.idPaciente = p_idPaciente
-    AND e.especialidad = 'Diagnóstico por imágenes'
-
-  ORDER BY fechaHora DESC;
-END //
-
-CREATE PROCEDURE CancelarTurnoImagen(IN p_idTurno INT, IN p_idPaciente INT)
-BEGIN
-  UPDATE TurnoEstudio SET estado = 'Cancelado'
-  WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
-    AND estado = 'Pendiente' AND fechaHora > NOW();
-  SELECT ROW_COUNT() AS cancelado;
-END //
-DELIMITER ;
-
-DELETE t1 FROM TurnoEstudio t1
-JOIN TurnoEstudio t2
-  ON t1.idPaciente = t2.idPaciente AND t1.idEstudio = t2.idEstudio
- AND t1.fechaHora = t2.fechaHora AND t1.estado = t2.estado
- AND t1.idTurno > t2.idTurno
-WHERE t1.idTurno > 0;
+-- =====================================================
+--  RECEPCIÓN: IMÁGENES (el turno nace 'Por acreditar'; al cobrar pasa a 'Pendiente' para Asistencial)
+--  Sin restricción de día y horario: se pueden acreditar turnos de hoy en adelante
+-- =====================================================
 
 DELIMITER //
-
--- 1) El turno de imagen nace sin pagar
-DROP PROCEDURE IF EXISTS AgendarTurnoImagen //
-CREATE PROCEDURE AgendarTurnoImagen(IN p_idPaciente INT, IN p_idEstudio INT, IN p_fechaHora DATETIME)
-agenda: BEGIN
-  IF NOT EXISTS (SELECT 1 FROM Paciente WHERE idPaciente = p_idPaciente) THEN
-    SELECT 'Error: paciente no existe' AS mensaje;
-    LEAVE agenda;
-  END IF;
-
-  IF NOT EXISTS (SELECT 1 FROM Estudio
-                 WHERE idEstudio = p_idEstudio AND especialidad = 'Diagnóstico por imágenes') THEN
-    SELECT 'Error: estudio no válido' AS mensaje;
-    LEAVE agenda;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM TurnoEstudio
-             WHERE idEstudio = p_idEstudio AND fechaHora = p_fechaHora AND estado <> 'Cancelado') THEN
-    SELECT 'Error: ese horario ya fue tomado' AS mensaje;
-    LEAVE agenda;
-  END IF;
-
-  INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion)
-  VALUES (p_idPaciente, p_idEstudio, p_fechaHora, 'App', 1, 'Por acreditar', 30);
-END agenda //
-
--- 2) El paciente solo cancela si todavía no pagó
-DROP PROCEDURE IF EXISTS CancelarTurnoImagen //
-CREATE PROCEDURE CancelarTurnoImagen(IN p_idTurno INT, IN p_idPaciente INT)
-BEGIN
-  UPDATE TurnoEstudio SET estado = 'Cancelado'
-  WHERE idTurno = p_idTurno AND idPaciente = p_idPaciente
-    AND estado = 'Por acreditar' AND fechaHora > NOW();
-  SELECT ROW_COUNT() AS cancelado;
-END //
-
--- 3) Recepción: imágenes de hoy por acreditar (mismas 10 columnas que RecepcionTurnosHoy + esImagen)
-DROP PROCEDURE IF EXISTS RecepcionImagenesHoy //
-CREATE PROCEDURE RecepcionImagenesHoy()
-BEGIN
-  SELECT t.idTurno, t.fechaHora, t.estado,
-         CONCAT(p.nombre, ' ', p.apellido) AS paciente,
-         p.dni,
-         COALESCE(p.modalidadCobertura, 'Particular') AS cobertura,
-         COALESCE(p.obraSocial, '') AS obraSocial,
-         e.nombre AS profesional,
-         'Diagnóstico por imágenes' AS especialidad,
-         'Servicio de Imágenes' AS consultorio,
-         1 AS esImagen
-  FROM TurnoEstudio t
-  JOIN Paciente p ON p.idPaciente = t.idPaciente
-  JOIN Estudio e ON e.idEstudio = t.idEstudio
-  WHERE e.especialidad = 'Diagnóstico por imágenes'
-    AND DATE(t.fechaHora) = CURDATE()
-    AND t.estado = 'Por acreditar'
-  ORDER BY t.fechaHora;
-END //
-
--- 4) Recepción: acreditar imagen (cobra, factura y lo pasa a Pendiente para Asistencial)
-DROP PROCEDURE IF EXISTS AcreditarTurnoImagen //
-CREATE PROCEDURE AcreditarTurnoImagen(
-  IN p_idTurno INT,
-  IN p_monto DECIMAL(12,2),
-  IN p_medioPago VARCHAR(30),
-  IN p_obraSocialAlDia BOOLEAN
-)
-acreditar: BEGIN
-  DECLARE v_pac INT;
-  DECLARE v_estado VARCHAR(20);
-  DECLARE v_concepto VARCHAR(100);
-  DECLARE v_cobertura VARCHAR(100);
-  DECLARE v_nro VARCHAR(20);
-
-  SELECT t.idPaciente, t.estado, CONCAT('Estudio ', e.nombre),
-         IF(p.modalidadCobertura = 'Obra Social' AND p_obraSocialAlDia,
-            CONCAT('Obra Social - ', COALESCE(p.obraSocial, 's/d')), 'Particular')
-  INTO v_pac, v_estado, v_concepto, v_cobertura
-  FROM TurnoEstudio t
-  JOIN Estudio e ON e.idEstudio = t.idEstudio
-  JOIN Paciente p ON p.idPaciente = t.idPaciente
-  WHERE t.idTurno = p_idTurno AND DATE(t.fechaHora) = CURDATE();
-
-  IF v_pac IS NULL THEN
-    SELECT 'Error: el turno no existe o no es de hoy' AS mensaje;
-    LEAVE acreditar;
-  END IF;
-
-  IF v_estado <> 'Por acreditar' THEN
-    SELECT CONCAT('Error: el turno está ', LOWER(v_estado), ', no se puede acreditar') AS mensaje;
-    LEAVE acreditar;
-  END IF;
-
-  IF p_monto IS NULL OR p_monto < 0 OR COALESCE(p_medioPago, '') = '' THEN
-    SELECT 'Error: falta el monto o el medio de pago' AS mensaje;
-    LEAVE acreditar;
-  END IF;
-
-  SELECT CONCAT('0001-', LPAD(COALESCE(MAX(CAST(SUBSTRING(nroComprobante, 6) AS UNSIGNED)), 0) + 1, 8, '0'))
-  INTO v_nro FROM Factura;
-
-  START TRANSACTION;
-  INSERT INTO Factura (nroComprobante, idPaciente, idTurnoEstudio, fechaEmision, concepto, monto, medioPago, cobertura, estado)
-  VALUES (v_nro, v_pac, p_idTurno, NOW(), v_concepto, p_monto, p_medioPago, v_cobertura, 'Pagada');
-  UPDATE TurnoEstudio SET estado = 'Pendiente' WHERE idTurno = p_idTurno;
-  COMMIT;
-
-  SELECT 'OK' AS mensaje, v_nro AS nroComprobante, v_concepto AS concepto, v_cobertura AS cobertura;
-END acreditar //
-DELIMITER ;
-
--- ACREDITAR SIN RESTRICION DE DIA Y HORARIO
-
-DELIMITER //
-DROP PROCEDURE IF EXISTS RecepcionImagenesHoy //
 CREATE PROCEDURE RecepcionImagenesHoy()
 BEGIN
   SELECT t.idTurno, t.fechaHora, t.estado,
@@ -1488,7 +1359,6 @@ BEGIN
   ORDER BY t.fechaHora;
 END //
 
-DROP PROCEDURE IF EXISTS AcreditarTurnoImagen //
 CREATE PROCEDURE AcreditarTurnoImagen(
   IN p_idTurno INT,
   IN p_monto DECIMAL(12,2),
@@ -1644,7 +1514,7 @@ INSERT INTO TurnoEstudio (idTurno, idPaciente, idEstudio, fechaHora, modalidadSo
 (5, 5, 5, '2026-10-15 15:00:00', 'App', 1);
 UPDATE TurnoEstudio SET estado = 'Atendido', fechaAtencion = fechaHora WHERE idTurno > 0 AND fechaHora < CURDATE();
 
--- Turnos de imágenes precargados (pendientes de atender)
+-- Turnos de imágenes precargados (ya acreditados, pendientes de atender)
 INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion) VALUES
 (1, 1, TIMESTAMP(CURDATE(), '15:00:00'), 'App', 1, 'Pendiente', 30),
 (2, 2, TIMESTAMP(CURDATE(), '16:00:00'), 'App', 1, 'Pendiente', 30),
@@ -1796,11 +1666,6 @@ INSERT INTO AusenciaProfesional (idProfesional, fecha, motivo) VALUES
 UPDATE Paciente SET obraSocial = 'OSDE', nroAfiliado = '61-123456-01' WHERE idPaciente = 2;
 UPDATE Paciente SET obraSocial = 'IOMA', nroAfiliado = 'IO-778899' WHERE idPaciente = 4;
 
-INSERT INTO TurnoEstudio (idPaciente, idEstudio, fechaHora, modalidadSolicitud, requiereTurno, estado, duracion) VALUES
-(1, 1, TIMESTAMP(CURDATE(), '15:00:00'), 'App', 1, 'Pendiente', 30),
-(2, 2, TIMESTAMP(CURDATE(), '16:00:00'), 'App', 1, 'Pendiente', 30),
-(3, 5, TIMESTAMP(CURDATE() + INTERVAL 1 DAY, '09:00:00'), 'App', 1, 'Pendiente', 30);
-
 -- =====================================================
 --  CONSULTAS DE PRUEBA
 -- =====================================================
@@ -1862,8 +1727,6 @@ SELECT i.nombre, e.responsable AS sector, i.stock
 FROM Insumo i
 JOIN Estudio e ON i.idEstudio = e.idEstudio
 WHERE i.stock <= i.stockMinimo;
-
-DELETE FROM TurnoEstudio WHERE idTurno IN (9, 10, 11);
 
 -- =====================================================
 --  PRUEBAS DE LABORATORIO
