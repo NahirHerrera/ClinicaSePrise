@@ -1,6 +1,6 @@
 namespace ClinicaSePrise.Entidades;
 
-// Turno del día tal como lo ve Recepción
+// Turno del día tal como lo ve Recepción (consultorio o estudio de imágenes)
 public class TurnoRecepcion
 {
     public int IdTurno { get; set; }
@@ -13,12 +13,13 @@ public class TurnoRecepcion
     public string Profesional { get; set; } = "";
     public string Especialidad { get; set; } = "";
     public string Consultorio { get; set; } = "";
+    public bool EsImagen { get; set; }
 
     public string Hora => FechaHora.ToString("HH:mm");
     public string Lugar => $"{Especialidad} · {Consultorio}";
     public bool VienePorObraSocial => Cobertura == "Obra Social";
 
-    // Se acredita cuando el paciente llega; se marca ausente si ya pasó la hora y no vino
-    public bool PuedeAcreditar => Estado is "Pendiente" or "Confirmado";
-    public bool PuedeMarcarAusente => PuedeAcreditar && FechaHora < DateTime.Now;
+    // Consultorio: se acredita Pendiente/Confirmado. Imagen: solo "Por acreditar"
+    public bool PuedeAcreditar => EsImagen ? Estado == "Por acreditar" : Estado is "Pendiente" or "Confirmado";
+    public bool PuedeMarcarAusente => !EsImagen && PuedeAcreditar && FechaHora < DateTime.Now;
 }

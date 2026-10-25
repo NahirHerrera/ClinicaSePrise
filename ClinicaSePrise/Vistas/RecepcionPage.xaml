@@ -43,7 +43,7 @@
 
             <Grid ColumnDefinitions="3*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
 
-                <!-- Turnos de hoy -->
+                <!-- Turnos de hoy (consultorios e imágenes) -->
                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Tarjeta}">
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Turnos de hoy" Style="{StaticResource Titulo}" />

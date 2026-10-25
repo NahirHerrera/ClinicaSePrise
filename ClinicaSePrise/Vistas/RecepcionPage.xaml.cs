@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Globalization;
 using ClinicaSePrise.Datos;
 using ClinicaSePrise.Entidades;
@@ -42,21 +43,27 @@ public partial class RecepcionPage : ContentPage
         }
     }
 
+    // Mismo mapeo para consultorios e imágenes: el procedimiento de imágenes trae una 11ª columna (esImagen)
+    static TurnoRecepcion Leer(DbDataReader r) => new()
+    {
+        IdTurno = r.GetInt32(0),
+        FechaHora = r.GetDateTime(1),
+        Estado = r.GetString(2),
+        Paciente = r.GetString(3),
+        Dni = r.GetString(4),
+        Cobertura = r.GetString(5),
+        ObraSocial = r.GetString(6),
+        Profesional = r.GetString(7),
+        Especialidad = r.GetString(8),
+        Consultorio = r.GetString(9),
+        EsImagen = r.FieldCount > 10
+    };
+
     async Task CargarTodo()
     {
-        turnosHoy = await Db.Query("CALL RecepcionTurnosHoy()", r => new TurnoRecepcion
-        {
-            IdTurno = r.GetInt32(0),
-            FechaHora = r.GetDateTime(1),
-            Estado = r.GetString(2),
-            Paciente = r.GetString(3),
-            Dni = r.GetString(4),
-            Cobertura = r.GetString(5),
-            ObraSocial = r.GetString(6),
-            Profesional = r.GetString(7),
-            Especialidad = r.GetString(8),
-            Consultorio = r.GetString(9)
-        });
+        var consultorios = await Db.Query("CALL RecepcionTurnosHoy()", Leer);
+        var imagenes = await Db.Query("CALL RecepcionImagenesHoy()", Leer);
+        turnosHoy = consultorios.Concat(imagenes).OrderBy(t => t.FechaHora).ToList();
         Filtrar();
         BindableLayout.SetItemsSource(stSalaEspera, turnosHoy.Where(t => t.Estado == "En espera").ToList());
 
@@ -69,8 +76,8 @@ public partial class RecepcionPage : ContentPage
             Profesional = r.GetString(4)
         }));
 
-        // Si había un turno elegido, se muestra con su estado actualizado
-        sel = turnosHoy.FirstOrDefault(t => t.IdTurno == sel?.IdTurno);
+        // Si había un turno elegido, se muestra con su estado actualizado (los ids de consultorio e imagen pueden coincidir)
+        sel = turnosHoy.FirstOrDefault(t => t.IdTurno == sel?.IdTurno && t.EsImagen == sel?.EsImagen);
         MostrarSeleccion();
     }
 
@@ -109,6 +116,7 @@ public partial class RecepcionPage : ContentPage
         // Solo se muestra lo que se puede hacer con el turno según su estado
         stObraSocial.IsVisible = sel.VienePorObraSocial && sel.PuedeAcreditar;
         txtMonto.IsVisible = btnAcreditar.IsVisible = sel.PuedeAcreditar;
+        btnAcreditar.Text = sel.EsImagen ? "Acreditar y pasar a Imágenes" : "Acreditar y pasar a sala";
 
         // Obra social al día: el paciente no abona nada, la consulta se le factura a la obra social
         pkMedioPago.IsVisible = sel.PuedeAcreditar && !PagaObraSocial;
@@ -135,7 +143,8 @@ public partial class RecepcionPage : ContentPage
         }
 
         string paciente = sel.Paciente;
-        var res = (await Db.Query("CALL AcreditarTurno(@t, @m, @mp, @os)",
+        bool imagen = sel.EsImagen;
+        var res = (await Db.Query($"CALL {(imagen ? "AcreditarTurnoImagen" : "AcreditarTurno")}(@t, @m, @mp, @os)",
             r => r.FieldCount == 1 ? r.GetString(0) : $"Factura N° {r.GetString(1)} · {r.GetString(2)} · {r.GetString(3)}",
             new MySqlParameter("@t", sel.IdTurno),
             new MySqlParameter("@m", monto),
@@ -151,7 +160,7 @@ public partial class RecepcionPage : ContentPage
         string total = $"$ {monto.ToString("N2", new CultureInfo("es-AR"))}";
         lblComprobante.Text = $"{res}\n" +
             (medioPago == "Obra Social" ? $"El paciente no abona: {total} a cargo de la obra social. " : $"Total: {total} ({medioPago}). ") +
-            $"{paciente} pasó a la sala de espera.";
+            $"{paciente} " + (imagen ? "quedó pendiente en Imágenes." : "pasó a la sala de espera.");
         lblComprobante.IsVisible = true;
         await CargarTodo();
     }
