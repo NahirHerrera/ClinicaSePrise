@@ -7,9 +7,6 @@ namespace ClinicaSePrise.Vistas;
 
 public partial class MedicoPage : ContentPage
 {
-    // TODO: usá la misma cadena de conexión que ya usan tus clases de Datos.
-    private const string ConnStr =
-        "Server=localhost;Port=3306;Database=ClinicaSePrise;User ID=root;Password=1234;";
 
     // Sin tocar la DB: el texto de la evolución se guarda en un archivo local de la app.
     private static readonly string RutaNotas =
@@ -34,7 +31,7 @@ public partial class MedicoPage : ContentPage
         var lista = new List<PacienteHoy>();
         try
         {
-            await using var conn = new MySqlConnection(ConnStr);
+            await using var conn = Conexion.getInstancia().CrearConexion();
             await conn.OpenAsync();
 
             const string sql = @"
@@ -96,7 +93,7 @@ public partial class MedicoPage : ContentPage
 
         try
         {
-            await using var conn = new MySqlConnection(ConnStr);
+            await using var conn = Conexion.getInstancia().CrearConexion();
             await conn.OpenAsync();
 
             const string sql = @"
@@ -158,7 +155,7 @@ public partial class MedicoPage : ContentPage
         try
         {
             long idAtencion;
-            await using (var conn = new MySqlConnection(ConnStr))
+            await using (var conn = Conexion.getInstancia().CrearConexion())
             {
                 await conn.OpenAsync();
                 await using var tx = await conn.BeginTransactionAsync();

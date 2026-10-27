@@ -5,12 +5,6 @@
              Title="Consultorio Médico"
              BackgroundColor="#F8FAFC">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="🚪 Cerrar Sesión"
-                     Clicked="OnCerrarSesionClicked"
-                     Order="Primary" />
-    </ContentPage.ToolbarItems>
-
     <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
         <!-- Fila 0: Saludo y título superior -->
         <VerticalStackLayout Grid.Row="0" Spacing="5">
