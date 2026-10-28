@@ -30,6 +30,7 @@ namespace ClinicaSePrise.Vistas
         {
             InitializeComponent();
             ConfigurarNavbar();
+            ActualizarTextoTema();
 
             SetContentFromPage(paginaInicial == null || paginaInicial is HomePage ? HomeSegunRol() : paginaInicial);
         }
@@ -62,16 +63,80 @@ namespace ClinicaSePrise.Vistas
             };
         }
 
+        void MarcarVistaActiva(string nombre)
+        {
+            LineaHome.IsVisible = nombre == "Home";
+            LineaPaciente.IsVisible = nombre == "Paciente";
+            LineaRecepcion.IsVisible = nombre == "Recepcion";
+            LineaMedico.IsVisible = nombre == "Medico";
+            LineaGuardia.IsVisible = nombre == "Guardia";
+            LineaLaboratorio.IsVisible = nombre == "Laboratorio";
+            LineaAsistencial.IsVisible = nombre == "Asistencial";
+        }
+
+
         void SetContentFromPage(Page page)
         {
             if (page is ContentPage cp && cp.Content != null)
             {
                 cp.Content.BindingContext = cp.BindingContext;
                 ContentArea.Content = cp.Content;
+
+                string nombre = page switch
+                {
+                    HomePage => "Home",
+                    PacientePage => "Paciente",
+                    RecepcionPage => "Recepcion",
+                    MedicoPage => "Medico",
+                    Guardia_InternacionPage => "Guardia",
+                    LaboratorioPage => "Laboratorio",
+                    AsistencialPage => "Asistencial",
+                    _ => ""
+                };
+
+                MarcarVistaActiva(nombre);
                 return;
             }
 
-            ContentArea.Content = new Label { Text = "La página no tiene contenido visual para mostrar acá.", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+            ContentArea.Content = new Label
+            {
+                Text = "La página no tiene contenido visual para mostrar acá.",
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
+            };
+
+            MarcarVistaActiva("");
         }
+
+        void ActualizarTextoTema()
+        {
+            var app = Application.Current;
+
+            if (app == null)
+                return;
+
+            bool estaEnModoOscuro = app.RequestedTheme == AppTheme.Dark;
+
+            BtnCambiarTema.Text = estaEnModoOscuro
+                ? "🌙 Modo oscuro"
+                : "☀️ Modo claro";
+        }
+
+        private void BtnCambiarTema_Clicked(object sender, EventArgs e)
+        {
+            var app = Application.Current;
+
+            if (app == null)
+                return;
+
+            bool estaEnModoOscuro = app.RequestedTheme == AppTheme.Dark;
+
+            app.UserAppTheme = estaEnModoOscuro
+                ? AppTheme.Light
+                : AppTheme.Dark;
+
+            ActualizarTextoTema();
+        }
+
     }
 }

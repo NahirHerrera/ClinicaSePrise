@@ -34,37 +34,111 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollView Grid.Column="0" BackgroundColor="#F9F9F9">
-            <StackLayout Padding="12" Spacing="6">
 
-                <StackLayout Orientation="Vertical" Padding="6" Spacing="2">
-                    <Label x:Name="LblDisplayNombre"
-                           FontAttributes="Bold"
-                           FontSize="16"
-                           TextColor="#222"
-                           LineBreakMode="TailTruncation" />
-                    <Label x:Name="LblRol"
-                           FontSize="12"
-                           TextColor="Gray"
-                           LineBreakMode="TailTruncation" />
-                </StackLayout>
+        <Grid Grid.Column="0"
+          BackgroundColor="#F9F9F9"
+          Padding="12"
+          RowDefinitions="Auto,*,Auto,Auto"
+          RowSpacing="6">
 
-                <BoxView Style="{StaticResource ThinSeparator}" />
+            <VerticalStackLayout Grid.Row="0"
+                         Padding="6"
+                         Spacing="2">
+                <Label x:Name="LblDisplayNombre"
+                       FontAttributes="Bold"
+                       FontSize="16"
+                       TextColor="#222"
+                       LineBreakMode="TailTruncation" />
 
-                <Button x:Name="BtnHome" Text="Home" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnPaciente" Text="Paciente" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnRecepcion" Text="Recepción" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnMedico" Text="Médico" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnGuardia" Text="Guardia / Internación" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnLaboratorio" Text="Laboratorio" Style="{StaticResource SimpleButtonStyle}" />
-                <Button x:Name="BtnAsistencial" Text="Asistencial" Style="{StaticResource SimpleButtonStyle}" />
+                <Label x:Name="LblRol"
+                       FontSize="12"
+                       TextColor="Gray"
+                       LineBreakMode="TailTruncation" />
 
-                <BoxView HeightRequest="8" Color="Transparent" />
+                <BoxView
+                        Style="{StaticResource ThinSeparator}"
+                        Margin="0,8,0,0" />
+            </VerticalStackLayout>
 
-                <Button x:Name="BtnCerrarSesion" Text="🚪 Cerrar Sesión" Style="{StaticResource LogoutButtonStyle}" TextColor="Black" />
 
-            </StackLayout>
-        </ScrollView>
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Spacing="0">
+
+                    <Button x:Name="BtnHome"
+                    Text="Home"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaHome"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                    <Button x:Name="BtnPaciente"
+                    Text="Paciente"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaPaciente"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                    <Button x:Name="BtnRecepcion"
+                    Text="Recepción"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaRecepcion"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                    <Button x:Name="BtnMedico"
+                    Text="Médico"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaMedico"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                    <Button x:Name="BtnGuardia"
+                    Text="Guardia / Internación"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaGuardia"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                    <Button x:Name="BtnLaboratorio"
+                    Text="Laboratorio"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaLaboratorio"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                    <Button x:Name="BtnAsistencial"
+                    Text="Asistencial"
+                    Style="{StaticResource SimpleButtonStyle}" />
+                    <BoxView x:Name="LineaAsistencial"
+                     HeightRequest="3"
+                     Color="#1677D2"
+                     IsVisible="False" />
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+
+            <Button 
+                Grid.Row="2"
+                x:Name="BtnCambiarTema"
+                Style="{StaticResource SimpleButtonStyle}"
+                Clicked="BtnCambiarTema_Clicked" />
+            <Button 
+                Grid.Row="3"
+                x:Name="BtnCerrarSesion"
+                Text="🚪 Cerrar Sesión"
+                Style="{StaticResource LogoutButtonStyle}"
+                TextColor="Black"
+                Margin="0,8,0,0" />
+
+        </Grid>
+
 
         <ContentView Grid.Column="1" x:Name="ContentArea" Padding="12">
             <Label Text="Bienvenido" HorizontalOptions="Center" VerticalOptions="Center" FontSize="18" TextColor="#222" />
