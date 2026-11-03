@@ -4,7 +4,7 @@
              xmlns:vistas="clr-namespace:ClinicaSePrise.Vistas"
              x:Class="ClinicaSePrise.Vistas.AsistencialPage"
              Title="Servicios Asistenciales y Diagnóstico"
-             BackgroundColor="#FAF5FF">
+             BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="🚪 Cerrar Sesión"
@@ -15,26 +15,26 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
             <VerticalStackLayout Spacing="5">
-                <Label x:Name="lblBienvenida" FontSize="14" TextColor="Gray" FontAttributes="Bold" />
-                <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="#6B21A8"/>
+                <Label x:Name="lblBienvenida" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" FontAttributes="Bold" />
+                <Label Text="Servicios Diagnósticos (Rayos X, Ecografía, RM)" FontSize="22" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
             </VerticalStackLayout>
 
-            <Frame Padding="15" BackgroundColor="Transparent">
+            <Frame Padding="15" BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Turnos pendientes de atender" FontSize="18" FontAttributes="Bold"/>
-                    <Label x:Name="SinPendientes" Text="No hay turnos pendientes." TextColor="Gray" IsVisible="False"/>
+                    <Label x:Name="SinPendientes" Text="No hay turnos pendientes." TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" IsVisible="False"/>
                     <VerticalStackLayout x:Name="ListaPendientes" Spacing="8">
-                        <Label Text="{Binding estado, StringFormat='Estado: {0}'}" FontAttributes="Bold" TextColor="#2563EB"/>
+                        <Label Text="{Binding estado, StringFormat='Estado: {0}'}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"/>
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <Border Padding="10" Stroke="#E9D5FF" StrokeThickness="1">
+                                <Border Padding="10" Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" StrokeThickness="1">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16" TextColor="Grey"/>
-                                            <Label Text="{Binding paciente}" TextColor="Grey"/>
-                                            <Label Text="{Binding dni, StringFormat='DNI {0}'}" TextColor="Gray"/>
-                                            <Label Text="{Binding fechaHora, StringFormat='{0:dd/MM/yyyy HH:mm}'}" TextColor="Gray"/>
-                                            <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="#6B21A8"/>
+                                            <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                            <Label Text="{Binding paciente}" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                            <Label Text="{Binding dni, StringFormat='DNI {0}'}" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                            <Label Text="{Binding fechaHora, StringFormat='{0:dd/MM/yyyy HH:mm}'}" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                            <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"/>
                                         </VerticalStackLayout>
                                         <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                             <Button Text="Llamar" Clicked="OnLlamar" IsVisible="{Binding pendiente}"/>
@@ -48,19 +48,19 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <Frame Padding="15" BackgroundColor="Transparent">
+            <Frame Padding="15" BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Estudios atendidos hoy" FontSize="18" FontAttributes="Bold" TextColor="Grey"/>
-                    <Label x:Name="SinAtendidos" Text="Todavía no se atendió ningún estudio hoy." TextColor="Gray" IsVisible="False"/>
+                    <Label Text="Estudios atendidos hoy" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                    <Label x:Name="SinAtendidos" Text="Todavía no se atendió ningún estudio hoy." TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" IsVisible="False"/>
                     <VerticalStackLayout x:Name="ListaAtendidos" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <Border Padding="10" Stroke="#E9D5FF" StrokeThickness="1">
+                                <Border Padding="10" Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" StrokeThickness="1">
                                     <VerticalStackLayout Spacing="2">
-                                        <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16" TextColor="Grey"/>
-                                        <Label Text="{Binding paciente}" TextColor="Grey"/>
-                                        <Label Text="{Binding fechaAtencion, StringFormat='Atendido a las {0:HH:mm}'}" TextColor="Gray"/>
-                                        <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="#6B21A8"/>
+                                        <Label Text="{Binding estudio}" FontAttributes="Bold" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                        <Label Text="{Binding paciente}" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                        <Label Text="{Binding fechaAtencion, StringFormat='Atendido a las {0:HH:mm}'}" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                        <Label Text="{Binding indicacion, StringFormat='Indicación: {0}'}" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"/>
                                     </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>
@@ -69,9 +69,9 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <Frame Padding="15" BackgroundColor="Transparent">
+            <Frame Padding="15" BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold" TextColor="Grey"/>
+                    <Label Text="Stock de Insumos Diagnósticos" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                     <vistas:StockPage x:Name="stock" Sector="Diagnóstico por imágenes" />
                 </VerticalStackLayout>
             </Frame>

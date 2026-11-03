@@ -2,25 +2,99 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.RegistroPage"
-             BackgroundColor="White">
-    <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="24" MaximumWidthRequest="480">
-            <Label Text="Crear cuenta" FontSize="26" FontAttributes="Bold" TextColor="#0F172A" />
-            <Label Text="Registrate como paciente para solicitar y gestionar tus turnos." TextColor="#64748B" />
+             BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource FondoOscuro}}">
 
-            <Entry x:Name="txtNombre" Placeholder="Nombre" />
-            <Entry x:Name="txtApellido" Placeholder="Apellido" />
-            <Entry x:Name="txtDni" Placeholder="DNI (sin puntos)" Keyboard="Numeric" MaxLength="8" />
-            <Entry x:Name="txtTelefono" Placeholder="Teléfono" Keyboard="Telephone" />
-            <Entry x:Name="txtEmail" Placeholder="Email" Keyboard="Email" />
-            <Entry x:Name="txtUsuario" Placeholder="Usuario" />
-            <Entry x:Name="txtPassword" Placeholder="Contraseña" IsPassword="True" />
-            <Entry x:Name="txtPassword2" Placeholder="Repetir contraseña" IsPassword="True" />
+    <ContentPage.Resources>
+        <!-- Recuadro de cada campo, igual al del login -->
+        <Style x:Key="Campo" TargetType="Border">
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="12,0" />
+        </Style>
+    </ContentPage.Resources>
 
-            <Button Text="Registrarme" Clicked="OnRegistrarClicked"
-                    BackgroundColor="#2563EB" TextColor="White" CornerRadius="12" />
-            <Button Text="Ya tengo cuenta" Clicked="OnVolverClicked"
-                    BackgroundColor="White" TextColor="#2563EB" BorderColor="#2563EB" BorderWidth="1" CornerRadius="12" />
-        </VerticalStackLayout>
+    <ScrollView VerticalScrollBarVisibility="Never">
+        <Grid Padding="20">
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    WidthRequest="420"
+                    StrokeShape="RoundRectangle 10"
+                    Stroke="{AppThemeBinding Light=Transparent, Dark={StaticResource BordeOscuro}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource SuperficieOscuro}}"
+                    Padding="30,25">
+                <Border.Shadow>
+                    <Shadow Opacity="0.1" Radius="8" Offset="0,2" />
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="12">
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Crear cuenta"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                               HorizontalOptions="Center" />
+                        <Label Text="Registrate como paciente para solicitar y gestionar tus turnos."
+                               FontSize="13"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,8,0,0">
+                        <Border Style="{StaticResource Campo}">
+                            <Entry x:Name="txtNombre" ClassId="SinBorde" Placeholder="Nombre" HeightRequest="42" />
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Campo}">
+                            <Entry x:Name="txtApellido" ClassId="SinBorde" Placeholder="Apellido" HeightRequest="42" />
+                        </Border>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Style="{StaticResource Campo}">
+                            <Entry x:Name="txtDni" ClassId="SinBorde" Placeholder="DNI (sin puntos)" Keyboard="Numeric" MaxLength="8" HeightRequest="42" />
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Campo}">
+                            <Entry x:Name="txtTelefono" ClassId="SinBorde" Placeholder="Teléfono" Keyboard="Telephone" HeightRequest="42" />
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource Campo}">
+                        <Entry x:Name="txtEmail" ClassId="SinBorde" Placeholder="Email" Keyboard="Email" HeightRequest="42" />
+                    </Border>
+
+                    <Border Style="{StaticResource Campo}">
+                        <Entry x:Name="txtUsuario" ClassId="SinBorde" Placeholder="Usuario" HeightRequest="42" />
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Style="{StaticResource Campo}">
+                            <Entry x:Name="txtPassword" ClassId="SinBorde" Placeholder="Contraseña" IsPassword="True" HeightRequest="42" />
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Campo}">
+                            <Entry x:Name="txtPassword2" ClassId="SinBorde" Placeholder="Repetir contraseña" IsPassword="True" HeightRequest="42" />
+                        </Border>
+                    </Grid>
+
+                    <Button Text="Registrarme"
+                            Clicked="OnRegistrarClicked"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                            TextColor="{AppThemeBinding Light={StaticResource TextoSobrePrimarioClaro}, Dark={StaticResource TextoSobrePrimarioOscuro}}"
+                            FontAttributes="Bold"
+                            CornerRadius="10"
+                            HeightRequest="44"
+                            Margin="0,10,0,0" />
+                    <Button Text="Ya tengo cuenta"
+                            Clicked="OnVolverClicked"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                            BorderColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                            BorderWidth="1"
+                            CornerRadius="10"
+                            HeightRequest="44" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
     </ScrollView>
 </ContentPage>

@@ -14,23 +14,23 @@
 
     <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="16">
 
-        <Label Grid.Row="0" x:Name="lblBienvenida" FontSize="18" FontAttributes="Bold" TextColor="Grey"/>
+        <Label Grid.Row="0" x:Name="lblBienvenida" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
 
         <ScrollView Grid.Row="1">
             <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
 
                 <VerticalStackLayout Grid.Column="0" Spacing="8">
-                    <Label Text="1. Ingreso de orden (sin turno)" FontSize="20" FontAttributes="Bold" TextColor="Grey"/>
+                    <Label Text="1. Ingreso de orden (sin turno)" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
 
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Entry x:Name="entDni" Placeholder="DNI del paciente" Keyboard="Numeric" BackgroundColor="AliceBlue"/>
+                        <Entry x:Name="entDni" Placeholder="DNI del paciente" Keyboard="Numeric" BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
                         <Button Grid.Column="1" Text="Buscar" Clicked="OnBuscarPaciente" />
                     </Grid>
 
                     <Label x:Name="lblPacNuevo" />
 
                     <VerticalStackLayout x:Name="stFormularioPaciente" IsVisible="False" Spacing="8" Margin="0,4,0,8">
-                        <Label Text="Paciente no registrado. Ingrese los datos:" TextColor="Red" FontSize="13" FontAttributes="Bold" />
+                        <Label Text="Paciente no registrado. Ingrese los datos:" TextColor="{AppThemeBinding Light={StaticResource ErrorClaro}, Dark={StaticResource ErrorOscuro}}" FontSize="13" FontAttributes="Bold" />
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Entry Grid.Column="0" x:Name="entNombre" Placeholder="Nombre" />
@@ -38,7 +38,7 @@
                         </Grid>
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Picker Grid.Column="0" x:Name="pkSexo" Title="Sexo" BackgroundColor="AliceBlue">
+                            <Picker Grid.Column="0" x:Name="pkSexo" Title="Sexo" BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}">
                                 <Picker.ItemsSource>
                                     <x:Array Type="{x:Type x:String}">
                                         <x:String>Masculino</x:String>
@@ -55,7 +55,7 @@
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Picker Grid.Column="0" x:Name="pkModalidadCobertura" Title="Cobertura"
                                 SelectedIndexChanged="OnCoberturaChanged"
-                                BackgroundColor="AliceBlue">
+                                BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}">
                             <Picker.ItemsSource>
                                 <x:Array Type="{x:Type x:String}">
                                     <x:String>Particular</x:String>
@@ -63,9 +63,9 @@
                                 </x:Array>
                             </Picker.ItemsSource>
                         </Picker>
-                        <Picker Grid.Column="1" x:Name="pkObraSocial" Title="Obra social" IsVisible="False"
-                                TextColor="Black"
-                                TitleColor="Black">
+                        <Picker Grid.Column="1" x:Name="pkObraSocial" BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}" Title="Obra social" IsVisible="False"
+                                TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                TitleColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}">
                             <Picker.ItemsSource>
                                 <x:Array Type="{x:Type x:String}">
                                     <x:String>OSDE</x:String>
@@ -92,17 +92,17 @@
                                     SelectionChanged="OnPracticasChanged">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="ent:PracticaLab">
-                                <Label Padding="6" Text="{Binding Descripcion}" TextColor="Grey"/>
+                                <Label Padding="6" Text="{Binding Descripcion}" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
                         <Label Text="$" FontSize="18" VerticalOptions="Center" />
-                        <Entry Grid.Column="1" x:Name="entMonto" Placeholder="Monto a cobrar" IsReadOnly="True" BackgroundColor="AliceBlue"/>
+                        <Entry Grid.Column="1" x:Name="entMonto" Placeholder="Monto a cobrar" IsReadOnly="True" BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
                     </Grid>
 
-                    <Picker x:Name="pkMedio" Title="Medio de pago" BackgroundColor="AliceBlue">
+                    <Picker x:Name="pkMedio" Title="Medio de pago" BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}">
                         <Picker.ItemsSource>
                             <x:Array Type="{x:Type x:String}">
                                 <x:String>Efectivo</x:String>
@@ -123,11 +123,11 @@
                                         SelectionChanged="OnSeleccion" HeightRequest="220">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="ent:OrdenLab">
-                                    <Border Padding="10" Margin="0,4">
+                                    <Border Padding="10" Margin="0,4" BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}">
                                         <VerticalStackLayout>
                                             <Label Text="{Binding Paciente}" FontAttributes="Bold" />
                                             <Label Text="{Binding Practicas}" FontSize="12" />
-                                            <Label Text="{Binding Estado}" FontSize="12" TextColor="Gray" />
+                                            <Label Text="{Binding Estado}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
                                         </VerticalStackLayout>
                                     </Border>
                                 </DataTemplate>
@@ -136,23 +136,23 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="12">
-                        <Label Text="3. Atención" FontSize="20" FontAttributes="Bold" TextColor="Grey"/>
-                        <Label x:Name="lblPaciente" Text="Seleccioná un paciente de la sala de espera" FontSize="16" TextColor="Grey"/>
-                        <Label x:Name="lblPracticas" FontSize="13" TextColor="Gray" />
+                        <Label Text="3. Atención" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                        <Label x:Name="lblPaciente" Text="Seleccioná un paciente de la sala de espera" FontSize="16" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                        <Label x:Name="lblPracticas" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <Button x:Name="btnLlamar" Text="Llamar paciente" Clicked="OnLlamar" IsEnabled="False" />
                             <Button Grid.Column="1" x:Name="btnAtender" Text="Atender y emitir comprobante" Clicked="OnAtender" IsEnabled="False" />
                         </Grid>
-                        <Border x:Name="bdComprobante" IsVisible="False" Padding="12">
+                        <Border x:Name="bdComprobante" IsVisible="False" Padding="12" BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}">
                             <VerticalStackLayout>
-                                <Label Text="Comprobante de retiro" FontAttributes="Bold" TextColor="Grey"/>
-                                <Label x:Name="lblRetiro" TextColor="Grey"/>
+                                <Label Text="Comprobante de retiro" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                <Label x:Name="lblRetiro" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                             </VerticalStackLayout>
                         </Border>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="4. Stock de insumos (se descuenta al atender)" FontSize="20" FontAttributes="Bold" TextColor="Grey"/>
+                        <Label Text="4. Stock de insumos (se descuenta al atender)" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                         <vistas:StockPage x:Name="stock" Sector="Laboratorio"/>
                     </VerticalStackLayout> 
 

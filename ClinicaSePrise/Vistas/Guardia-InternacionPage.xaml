@@ -2,29 +2,29 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.Guardia_InternacionPage"
-             BackgroundColor="#FEF2F2">
+             BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}">
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
             <VerticalStackLayout Spacing="5">
                 <Label x:Name="lblBienvenida" 
                        FontSize="14" 
-                       TextColor="Gray" 
+                       TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" 
                        FontAttributes="Bold" />
 
-                <Label Text="Gestión de Derivaciones a Estudios (Circuito B)" FontSize="22" FontAttributes="Bold" TextColor="#991B1B"/>
+                <Label Text="Gestión de Derivaciones a Estudios (Circuito B)" FontSize="22" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource ErrorClaro}, Dark={StaticResource ErrorOscuro}}"/>
             </VerticalStackLayout>
 
             <Frame CornerRadius="10" Padding="15"
-                   BackgroundColor="{AppThemeBinding Light=LightGrey, Dark=LightGrey}">
+                   BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Nueva Derivación de Guardia/Internación" FontSize="16" FontAttributes="Bold"/>
-                    <Entry x:Name="EntryDNI" Placeholder="DNI del paciente" Keyboard="Numeric" TextColor="Black"/>
+                    <Entry x:Name="EntryDNI" Placeholder="DNI del paciente" Keyboard="Numeric" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                     <Picker x:Name="PickerOrigen"
                             Title="Origen de Derivación"
-                            TitleColor="Black"
-                            TextColor="Black"
-                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}">
+                            TitleColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
+                            TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}">
                         <Picker.Items>
                             <x:String>Guardia Médica</x:String>
                             <x:String>Internación Piso</x:String>
@@ -33,33 +33,33 @@
                     </Picker>
                     <Picker x:Name="PickerEstudio"
                             Title="Estudio Solicitado (Circuito B)"
-                            TitleColor="Black"
-                            TextColor="Black"
-                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=AliceBlue}"/>
-                    <Button Text="Emitir Derivación Urgente" BackgroundColor="#DC2626" TextColor="White" Clicked="OnEmitirDerivacionClicked"/>
+                            TitleColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
+                            TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
+                    <Button Text="Emitir Derivación Urgente" BackgroundColor="{StaticResource Error}" TextColor="White" Clicked="OnEmitirDerivacionClicked"/>
                 </VerticalStackLayout>
             </Frame>
 
 
-            <Frame CornerRadius="10" Padding="10" BackgroundColor="{AppThemeBinding Light=White, Dark=LightGrey}">
+            <Frame CornerRadius="10" Padding="10" BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <VerticalStackLayout>
-                    <Label Text="Derivaciones" FontSize="16" FontAttributes="Bold" TextColor="DimGrey" />
+                    <Label Text="Derivaciones" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
                     <CollectionView x:Name="Derivaciones" ItemsLayout="VerticalList">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <StackLayout>
                                     <VerticalStackLayout Spacing="4" Padding="10">
-                                        <Label Text="{Binding NombreCompleto}" FontSize="13" TextColor="Black"/>
+                                        <Label Text="{Binding NombreCompleto}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                                         <HorizontalStackLayout Spacing="12">
-                                            <Label Text="Origen:" FontAttributes="Bold" FontSize="12" TextColor="Grey"/>
-                                            <Label Text="{Binding Origen}" FontSize="12" TextColor="Grey"/>
-                                            <Label Text="Estudio:" FontAttributes="Bold" FontSize="12" Margin="10,0,0,0" TextColor="Grey"/>
-                                            <Label Text="{Binding EstudioNombre}" FontSize="12" TextColor="Grey"/>
-                                            <Label Text="{Binding Estado}" FontSize="12" TextColor="Black"/>
+                                            <Label Text="Origen:" FontAttributes="Bold" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                            <Label Text="{Binding Origen}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                            <Label Text="Estudio:" FontAttributes="Bold" FontSize="12" Margin="10,0,0,0" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                            <Label Text="{Binding EstudioNombre}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                            <Label Text="{Binding Estado}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                                         </HorizontalStackLayout>
                                     </VerticalStackLayout>
 
-                                    <BoxView HeightRequest="10" BackgroundColor="#E0E0E0" HorizontalOptions="Fill" Margin="10,0"/>
+                                    <BoxView HeightRequest="10" BackgroundColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" HorizontalOptions="Fill" Margin="10,0"/>
                                 </StackLayout>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
