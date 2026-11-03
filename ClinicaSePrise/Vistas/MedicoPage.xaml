@@ -3,38 +3,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.MedicoPage"
              Title="Consultorio Médico"
-             BackgroundColor="#F8FAFC">
+             BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}">
 
     <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="15">
         <!-- Fila 0: Saludo y título superior -->
         <VerticalStackLayout Grid.Row="0" Spacing="5">
             <Label x:Name="lblBienvenida"
                    FontSize="14"
-                   TextColor="Gray"
+                   TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
                    FontAttributes="Bold" />
 
-            <Label Text="Consultorio Médico" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+            <Label Text="Consultorio Médico" FontSize="22" FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
         </VerticalStackLayout>
 
         <!-- Fila 1: Contenido principal (Columnas) -->
         <Grid Grid.Row="1" ColumnDefinitions="300,*" ColumnSpacing="20">
 
             <!-- Lista de Pacientes citados hoy -->
-            <Frame Grid.Column="0" Padding="10" CornerRadius="10">
+            <Frame Grid.Column="0" Padding="10" CornerRadius="10"
+                   BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}"
+                   BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Pacientes de Hoy" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Pacientes de Hoy" FontSize="18" FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                     <Label x:Name="lblSinPacientes" Text="No hay pacientes citados para hoy."
-                           TextColor="Gray" FontSize="12" IsVisible="False"/>
+                           TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
+                           FontSize="12" IsVisible="False"/>
                     <CollectionView x:Name="cvPacientesHoy"
                                     SelectionMode="Single"
                                     SelectionChanged="OnPacienteSeleccionado">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Frame Margin="0,2" Padding="8" BorderColor="#CBD5E1">
+                                <Frame Margin="0,2" Padding="8"
+                                       BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
+                                       BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                                     <VerticalStackLayout>
-                                        <Label Text="{Binding NombrePaciente}" FontAttributes="Bold"/>
-                                        <Label Text="{Binding Hora}" TextColor="Gray" FontSize="12"/>
-                                        <Label Text="{Binding Estado}" TextColor="#2563EB" FontSize="12"/>
+                                        <Label Text="{Binding NombrePaciente}" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                        <Label Text="{Binding Hora}" FontSize="12"
+                                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
+                                        <Label Text="{Binding Estado}" FontSize="12"
+                                               TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"/>
                                     </VerticalStackLayout>
                                 </Frame>
                             </DataTemplate>
@@ -44,32 +54,44 @@
             </Frame>
 
             <!-- Historia clínica + Registro de atención -->
-            <Frame Grid.Column="1" Padding="15" CornerRadius="10">
+            <Frame Grid.Column="1" Padding="15" CornerRadius="10"
+                   BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}"
+                   BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                 <ScrollView>
                     <VerticalStackLayout Spacing="12">
 
                         <Label x:Name="lblPacienteActual"
                                Text="Seleccione un paciente de la lista"
-                               FontSize="20" FontAttributes="Bold" TextColor="#0F172A"/>
-                        <Label x:Name="lblDatosPaciente" FontSize="12" TextColor="Gray"/>
+                               FontSize="20" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                        <Label x:Name="lblDatosPaciente" FontSize="12"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
 
                         <!-- Historia clínica previa -->
                         <Label Text="Historia clínica (atenciones previas)"
-                               FontSize="16" FontAttributes="Bold" TextColor="#0F172A"/>
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                         <Label x:Name="lblSinHistoria"
                                Text="Sin atenciones previas registradas."
-                               TextColor="Gray" FontSize="12" IsVisible="False"/>
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
+                               FontSize="12" IsVisible="False"/>
 
                         <VerticalStackLayout x:Name="layoutHistoria" Spacing="6">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate>
-                                    <Frame Padding="10" BorderColor="#CBD5E1" BackgroundColor="#F1F5F9" CornerRadius="8">
+                                    <Frame Padding="10" CornerRadius="8"
+                                           BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"
+                                           BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="{Binding Titulo}" FontAttributes="Bold" TextColor="#0F172A"/>
-                                            <Label Text="{Binding Detalle}" FontSize="12" TextColor="Gray"/>
+                                            <Label Text="{Binding Titulo}" FontAttributes="Bold"
+                                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
+                                            <Label Text="{Binding Detalle}" FontSize="12"
+                                                   TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                                             <Label Text="{Binding Evolucion}" FontSize="13"
+                                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
                                                    IsVisible="{Binding TieneEvolucion}"/>
-                                            <Label Text="{Binding Indicaciones}" FontSize="13" TextColor="#2563EB"
+                                            <Label Text="{Binding Indicaciones}" FontSize="13"
+                                                   TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
                                                    IsVisible="{Binding TieneIndicaciones}"/>
                                         </VerticalStackLayout>
                                     </Frame>
@@ -77,23 +99,34 @@
                             </BindableLayout.ItemTemplate>
                         </VerticalStackLayout>
 
-                        <BoxView HeightRequest="1" Color="#CBD5E1"/>
+                        <BoxView HeightRequest="1"
+                                 Color="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"/>
 
                         <!-- Atención actual -->
-                        <Label Text="Atención actual" FontSize="16" FontAttributes="Bold" TextColor="#0F172A"/>
+                        <Label Text="Atención actual" FontSize="16" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                         <Editor x:Name="edEvolucion"
                                 Placeholder="Escriba aquí la evolución clínica, síntomas, diagnóstico..."
-                                HeightRequest="120"/>
+                                HeightRequest="120"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
+                                TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                         <Editor x:Name="edIndicaciones"
                                 Placeholder="Indicaciones médicas / Recetario / Estudios solicitados..."
-                                HeightRequest="100"/>
+                                HeightRequest="100"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
+                                TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                         <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                            <CheckBox x:Name="chkNuevoTurno"/>
-                            <Label Text="Indica nuevo turno de control" VerticalOptions="Center"/>
+                            <CheckBox x:Name="chkNuevoTurno"
+                                      Color="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"/>
+                            <Label Text="Indica nuevo turno de control" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"/>
                         </HorizontalStackLayout>
                         <Button x:Name="btnFinalizar"
                                 Text="Finalizar Consulta y Guardar Atención"
-                                BackgroundColor="#2563EB" TextColor="White"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                                TextColor="{AppThemeBinding Light={StaticResource TextoSobrePrimarioClaro}, Dark={StaticResource TextoSobrePrimarioOscuro}}"
                                 IsEnabled="False"
                                 Clicked="OnFinalizarConsultaClicked"/>
                     </VerticalStackLayout>

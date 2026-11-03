@@ -6,20 +6,20 @@
 
     <ContentPage.Resources>
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Stroke" Value="#E8EBF0" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" />
             <Setter Property="StrokeShape" Value="RoundRectangle 16" />
-            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" />
             <Setter Property="Padding" Value="20" />
         </Style>
 
         <Style x:Key="Titulo" TargetType="Label">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontAttributes" Value="Bold" />
-            <Setter Property="TextColor" Value="#0F172A" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
         </Style>
 
         <Style x:Key="Sub" TargetType="Label">
-            <Setter Property="TextColor" Value="#64748B" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
         </Style>
     </ContentPage.Resources>
 
@@ -30,17 +30,17 @@
             <StackLayout VerticalOptions="Start" HorizontalOptions="Start" Margin="0,0,0,10">
                 <Label x:Name="lblBienvenida" 
                        FontSize="14" 
-                       TextColor="Gray" 
+                       TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" 
                        FontAttributes="Bold" />
 
                 <Label Text="Clínica SePrise - Portal del paciente" 
                        FontSize="24" 
                        FontAttributes="Bold" 
-                       TextColor="#1A2530" />
+                       TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
 
                 <Label Text="Gestioná tus turnos y consultá tus comprobantes." 
                        FontSize="14" 
-                       TextColor="Gray" />
+                       TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
             </StackLayout>
 
             <!-- SOLICITAR TURNO -->
@@ -49,32 +49,32 @@
                     <Label Text="Solicitar turno" Style="{StaticResource Titulo}" />
 
                     <Label Text="Tipo de Atención"
-                           TextColor="Gray"/>
+                           TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                     <Picker x:Name="pkTipoAtencion"
                             Title="Seleccioná el tipo de atención"
                             SelectedIndexChanged="OnTipoAtencionChanged"
-                            TextColor="Gray"
-                            BackgroundColor="AliceBlue"/>
+                            TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
 
                     <!-- SECCIÓN MÉDICA -->
                     <VerticalStackLayout x:Name="layoutMedico" Spacing="10">
                         <Label Text="Especialidad"
-                               TextColor="Gray"/>
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                         <Picker x:Name="pkEspecialidad"
                                 SelectedIndexChanged="OnEspecialidad"
-                                BackgroundColor="AliceBlue"/>
+                                BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
 
-                        <Label Text="Profesional" TextColor="grey"/>
+                        <Label Text="Profesional" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                         <Picker x:Name="pkProfesional"
                                 ItemDisplayBinding="{Binding nombre}"
                                 SelectedIndexChanged="BuscarSlots"
-                                BackgroundColor="AliceBlue"/>
+                                BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
 
                         <Label Text="Fecha del turno"
-                               TextColor="Gray"/>
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                         <DatePicker x:Name="dpFecha"
                                     DateSelected="BuscarSlots"
-                                    BackgroundColor="AliceBlue"/>
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
                     </VerticalStackLayout>
 
                     <!-- SECCIÓN DIAGNÓSTICO POR IMÁGENES -->
@@ -84,23 +84,23 @@
                                 Title="Seleccioná un estudio"
                                 ItemDisplayBinding="{Binding nombre}"
                                 SelectedIndexChanged="OnPracticaImagenChanged"
-                                BackgroundColor="AliceBlue"/>
+                                BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
 
                         <Label x:Name="lblIndicacion"
-                               TextColor="#6B21A8"
+                               TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
                                FontAttributes="Bold"
                                IsVisible="False" />
 
                         <Label Text="Fecha del estudio"
-                               TextColor="Gray"/>
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                         <DatePicker x:Name="dpFechaImagen"
                                     DateSelected="BuscarSlotsImagen"
-                                    BackgroundColor="AliceBlue"/>
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource SecundarioClaro}, Dark={StaticResource SecundarioOscuro}}"/>
                     </VerticalStackLayout>
 
                     <Label Text="Horarios disponibles"
                            FontAttributes="Bold"
-                           TextColor="#0F172A" />
+                           TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
 
                     <!-- HORARIOS DINÁMICOS -->
                     <FlexLayout x:Name="ListaSlots" Wrap="Wrap">
@@ -110,9 +110,9 @@
                                         Clicked="OnSlotClicked"
                                         Margin="0,0,8,8"
                                         Padding="16,0"
-                                        BackgroundColor="White"
-                                        TextColor="#2563EB"
-                                        BorderColor="#2563EB"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
+                                        TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                                        BorderColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
                                         BorderWidth="1"
                                         CornerRadius="12" />
                             </DataTemplate>
@@ -123,7 +123,7 @@
                            Text="No hay horarios disponibles para ese día."
                            Style="{StaticResource Sub}"
                            IsVisible="False"
-                           TextColor="Grey"/>
+                           TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"/>
                 </VerticalStackLayout>
             </Border>
 
@@ -135,22 +135,22 @@
                     <VerticalStackLayout x:Name="ListaTurnos" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <Border Style="{StaticResource Card}" BackgroundColor="#F8FAFC" Padding="16">
+                                <Border Style="{StaticResource Card}" BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" Padding="16">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="{Binding especialidad}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding especialidad}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
                                             <Label Text="{Binding nombreProfesional}" Style="{StaticResource Sub}" />
                                             <Label Text="{Binding Fecha}" Style="{StaticResource Sub}" />
                                         </VerticalStackLayout>
 
                                         <VerticalStackLayout Grid.Column="1" Spacing="6" HorizontalOptions="End">
-                                            <Label Text="{Binding estado}" FontAttributes="Bold" TextColor="#2563EB" HorizontalOptions="End" />
+                                            <Label Text="{Binding estado}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}" HorizontalOptions="End" />
                                             <Button Text="Cancelar"
                                                     Clicked="Cancelar_Clicked"
                                                     IsVisible="{Binding PuedeCancelar}"
-                                                    BackgroundColor="White"
-                                                    TextColor="Red"
-                                                    BorderColor="#E8EBF0"
+                                                    BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
+                                                    TextColor="{AppThemeBinding Light={StaticResource ErrorClaro}, Dark={StaticResource ErrorOscuro}}"
+                                                    BorderColor="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
                                                     BorderWidth="1"
                                                     CornerRadius="12" />
                                         </VerticalStackLayout>
@@ -172,17 +172,17 @@
                     <VerticalStackLayout x:Name="ListaFacturas" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="e:Factura">
-                                <Border Style="{StaticResource Card}" BackgroundColor="#F8FAFC" Padding="16">
+                                <Border Style="{StaticResource Card}" BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" Padding="16">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="{Binding concepto}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding concepto}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
                                             <Label Text="{Binding detalle}" Style="{StaticResource Sub}" />
                                             <Label Text="{Binding nroComprobante}" Style="{StaticResource Sub}" FontSize="12" />
                                         </VerticalStackLayout>
 
                                         <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
-                                            <Label Text="{Binding montoTxt}" FontAttributes="Bold" TextColor="#0F172A" HorizontalOptions="End" />
-                                            <Label Text="{Binding estado}" TextColor="#2563EB" HorizontalOptions="End" />
+                                            <Label Text="{Binding montoTxt}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" HorizontalOptions="End" />
+                                            <Label Text="{Binding estado}" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}" HorizontalOptions="End" />
                                         </VerticalStackLayout>
                                     </Grid>
                                 </Border>
@@ -202,14 +202,14 @@
                     <VerticalStackLayout x:Name="ListaEstudios" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="e:ComprobanteEstudio">
-                                <Border Style="{StaticResource Card}" BackgroundColor="#F8FAFC" Padding="16">
+                                <Border Style="{StaticResource Card}" BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}" Padding="16">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                                         <VerticalStackLayout Spacing="2">
-                                            <Label Text="{Binding nombre}" FontAttributes="Bold" TextColor="#0F172A" />
+                                            <Label Text="{Binding nombre}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
                                             <Label Text="{Binding fecha}" Style="{StaticResource Sub}" />
                                         </VerticalStackLayout>
 
-                                        <Label Grid.Column="1" Text="{Binding estado}" TextColor="#2563EB" VerticalOptions="Center" />
+                                        <Label Grid.Column="1" Text="{Binding estado}" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}" VerticalOptions="Center" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>

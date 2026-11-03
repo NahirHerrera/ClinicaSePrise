@@ -12,7 +12,7 @@ public class GraficoBarras : IDrawable
     public void Draw(ICanvas canvas, RectF r)
     {
         canvas.FontSize = 12;
-        canvas.FontColor = Colors.DimGray;
+        canvas.FontColor = ColorTexto();
 
         if (Datos.Count == 0)
         {
@@ -40,4 +40,20 @@ public class GraficoBarras : IDrawable
 
     // Alto que necesita el GraphicsView para mostrar todas las filas
     public double AltoNecesario => Math.Max(60, Datos.Count * AltoFila);
+
+    // Texto con la paleta del tema actual (Colors.xaml)
+    static Color ColorTexto()
+    {
+        var app = Application.Current;
+        string clave = app?.RequestedTheme == AppTheme.Dark ? "TextoSuaveOscuro" : "TextoSuaveClaro";
+        return app != null && app.Resources.TryGetValue(clave, out var c) && c is Color color ? color : Colors.DimGray;
+    }
+
+    // El GraphicsView no se redibuja solo al cambiar el tema: lo forzamos mientras esté en pantalla
+    public static void RedibujarAlCambiarTema(GraphicsView vista)
+    {
+        void Redibujar(object? s, AppThemeChangedEventArgs e) => vista.Invalidate();
+        vista.Loaded += (_, __) => { if (Application.Current != null) Application.Current.RequestedThemeChanged += Redibujar; };
+        vista.Unloaded += (_, __) => { if (Application.Current != null) Application.Current.RequestedThemeChanged -= Redibujar; };
+    }
 }

@@ -147,13 +147,17 @@ public partial class LaboratorioPage : ContentPage
             if (idPac == 0)
             {
                 lblPacNuevo.Text = "Paciente no registrado. Complete los datos:";
-                lblPacNuevo.TextColor = Colors.Red;
+                lblPacNuevo.SetAppThemeColor(Label.TextColorProperty,
+                    (Color)Application.Current!.Resources["ErrorClaro"],
+                    (Color)Application.Current.Resources["ErrorOscuro"]);
                 stFormularioPaciente.IsVisible = true;
             }
             else
             {
                 lblPacNuevo.Text = $"Encontrado: {p.Item2}";
-                lblPacNuevo.TextColor = Colors.Green;
+                lblPacNuevo.SetAppThemeColor(Label.TextColorProperty,
+                    (Color)Application.Current!.Resources["ExitoClaro"],
+                    (Color)Application.Current.Resources["ExitoOscuro"]);
                 stFormularioPaciente.IsVisible = false;
             }
         }

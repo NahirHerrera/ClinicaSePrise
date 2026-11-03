@@ -2,15 +2,15 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.ConexionPage"
-             BackgroundColor="#F5F6F8">
+             BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource FondoOscuro}}">
 
     <Grid>
         <Border VerticalOptions="Center"
                 HorizontalOptions="Center"
                 WidthRequest="420"
                 StrokeShape="RoundRectangle 10"
-                Stroke="Transparent"
-                BackgroundColor="White"
+                Stroke="{AppThemeBinding Light=Transparent, Dark={StaticResource BordeOscuro}}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource SuperficieOscuro}}"
                 Padding="30,25">
             <Border.Shadow>
                 <Shadow Opacity="0.1" Radius="8" Offset="0,2" />
@@ -24,7 +24,7 @@
                            HorizontalOptions="Center"
                            FontSize="16"
                            FontAttributes="Bold"
-                           TextColor="#334155"
+                           TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
                            Margin="0,5,0,0" />
 
                     <!-- Puerto -->
@@ -32,16 +32,19 @@
                         <Label Text="Puerto"
                                FontSize="13"
                                FontAttributes="Bold"
-                               TextColor="#475569" />
-                        <Border Stroke="#CBD5E1"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
+                        <Border Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
                                 StrokeShape="RoundRectangle 10"
                                 StrokeThickness="1"
                                 Padding="12,0">
                             <Entry x:Name="txtPuerto"
+                                   ClassId="SinBorde"
                                    Placeholder="Ingresa el Puerto"
                                    Keyboard="Numeric"
                                    Text="3306"
-                                   TextColor="#1E293B"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                   PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
                                    HeightRequest="42" />
                         </Border>
                     </VerticalStackLayout>
@@ -51,16 +54,19 @@
                         <Label Text="Usuario"
                                FontSize="13"
                                FontAttributes="Bold"
-                               TextColor="#475569" />
-                        <Border Stroke="#CBD5E1"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
+                        <Border Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
                                 StrokeShape="RoundRectangle 10"
                                 StrokeThickness="1"
                                 Padding="12,0">
                             <Entry x:Name="txtUsuario"
+                                   ClassId="SinBorde"
                                    Placeholder="Ingresa el Usuario"
                                    Keyboard="Text"
                                    Text="root"
-                                   TextColor="#1E293B"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                   PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
                                    HeightRequest="42" />
                         </Border>
                     </VerticalStackLayout>
@@ -70,25 +76,28 @@
                         <Label Text="Contraseña"
                                FontSize="13"
                                FontAttributes="Bold"
-                               TextColor="#475569" />
-                        <Border Stroke="#CBD5E1"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
+                        <Border Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
                                 StrokeShape="RoundRectangle 10"
                                 StrokeThickness="1"
                                 Padding="12,0">
                             <Entry x:Name="txtPassword"
+                                   ClassId="SinBorde"
                                    Placeholder="Ingresa la Contraseña"
                                    Keyboard="Text"
                                    IsPassword="True"
                                    Text=""
-                                   TextColor="#1E293B"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                   PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
                                    HeightRequest="42" />
                         </Border>
                     </VerticalStackLayout>
 
                     <Button x:Name="enviar"
                             Text="Enviar"
-                            BackgroundColor="#2563EB"
-                            TextColor="White"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                            TextColor="{AppThemeBinding Light={StaticResource TextoSobrePrimarioClaro}, Dark={StaticResource TextoSobrePrimarioOscuro}}"
                             FontAttributes="Bold"
                             CornerRadius="10"
                             HeightRequest="44"

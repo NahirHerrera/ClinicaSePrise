@@ -33,6 +33,56 @@
     <Color x:Key="Borde">#E2E8F0</Color>
     <Color x:Key="Gris">#64748B</Color>
 
+    <!-- ===== Paleta SePrise (logo) ===== -->
+
+    <!-- Marca (iguales en ambos modos) -->
+    <Color x:Key="Turquesa">#2BB3BC</Color>
+    <Color x:Key="Celeste">#8FD0E0</Color>
+    <Color x:Key="Salvia">#C5D3B8</Color>
+
+    <!-- Modo CLARO: blanco + turquesa medio -->
+    <Color x:Key="FondoClaro">#FFFFFF</Color>
+    <Color x:Key="SuperficieClaro">#F2F9FA</Color>
+    <Color x:Key="BordeClaro">#D3E6E8</Color>
+    <Color x:Key="PrimarioClaro">#1E9EA8</Color>
+    <Color x:Key="PrimarioHoverClaro">#17838C</Color>
+    <Color x:Key="SecundarioClaro">#D9F0F2</Color>
+    <Color x:Key="TextoClaro">#1F2A2E</Color>
+    <Color x:Key="TextoSuaveClaro">#5B6B70</Color>
+    <Color x:Key="TextoSobrePrimarioClaro">#FFFFFF</Color>
+
+    <!-- Modo OSCURO: gris + turquesa -->
+    <Color x:Key="FondoOscuro">#1E2225</Color>
+    <Color x:Key="SuperficieOscuro">#2A2F33</Color>
+    <Color x:Key="BordeOscuro">#3A4146</Color>
+    <Color x:Key="PrimarioOscuro">#3CC4CC</Color>
+    <Color x:Key="PrimarioHoverOscuro">#5FD3D9</Color>
+    <Color x:Key="SecundarioOscuro">#24464A</Color>
+    <Color x:Key="TextoOscuro">#E6ECEE</Color>
+    <Color x:Key="TextoSuaveOscuro">#9AA8AD</Color>
+    <Color x:Key="TextoSobrePrimarioOscuro">#0F1A1C</Color>
+
+    <!-- Estados -->
+    <Color x:Key="Exito">#16A34A</Color>
+    <Color x:Key="Error">#DC2626</Color>
+    <Color x:Key="Advertencia">#F59E0B</Color>
+
+    <!-- Estados (texto) por modo -->
+    <Color x:Key="ExitoClaro">#15803D</Color>
+    <Color x:Key="ExitoOscuro">#4ADE80</Color>
+    <Color x:Key="AdvertenciaClaro">#B45309</Color>
+    <Color x:Key="AdvertenciaOscuro">#FBBF24</Color>
+    <Color x:Key="ErrorClaro">#DC2626</Color>
+    <Color x:Key="ErrorOscuro">#F87171</Color>
+
+    <!-- Mensajes de error (cartel) -->
+    <Color x:Key="ErrorFondoClaro">#FEE2E2</Color>
+    <Color x:Key="ErrorBordeClaro">#FCA5A5</Color>
+    <Color x:Key="ErrorTextoClaro">#991B1B</Color>
+    <Color x:Key="ErrorFondoOscuro">#3B2326</Color>
+    <Color x:Key="ErrorBordeOscuro">#7F2D33</Color>
+    <Color x:Key="ErrorTextoOscuro">#FCA5A5</Color>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

@@ -2,13 +2,13 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.HomePage"
-             BackgroundColor="{StaticResource Fondo}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}">
 
     <ContentPage.Resources>
         <!-- Card conserva padding interno -->
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="BackgroundColor" Value="White" />
-            <Setter Property="Stroke" Value="{StaticResource Borde}" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" />
             <Setter Property="StrokeShape" Value="RoundRectangle 16" />
             <Setter Property="Padding" Value="20" />
             <!-- PADDING INTERNO CONSERVADO -->
@@ -24,7 +24,7 @@
         </Style>
 
         <Style x:Key="MenuText" TargetType="Label">
-            <Setter Property="TextColor" Value="{StaticResource Gris}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
             <Setter Property="Margin" Value="0" />
         </Style>
     </ContentPage.Resources>
@@ -37,7 +37,7 @@
 
                 <Label x:Name="lblBienvenida"
                        FontSize="14"
-                       TextColor="Gray"
+                       TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
                        FontAttributes="Bold"
                        Margin="0" />
 
@@ -49,47 +49,47 @@
 
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Padding="0" Margin="0">
                         <Label Text="{Binding Usuario}" FontAttributes="Bold" HorizontalOptions="End" Margin="0" />
-                        <Label Text="{Binding Rol}" FontSize="12" TextColor="{StaticResource Gris}" HorizontalOptions="End" Margin="0" />
+                        <Label Text="{Binding Rol}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" HorizontalOptions="End" Margin="0" />
                     </VerticalStackLayout>
                 </Grid>
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0" Padding="0">
                     <VerticalStackLayout Padding="0" Margin="0">
-                        <Label Text="{Binding Fecha}" TextColor="{StaticResource Azul}" FontSize="13" Margin="0" />
+                        <Label Text="{Binding Fecha}" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}" FontSize="13" Margin="0" />
                         <Label Text="{Binding Usuario, StringFormat='Buenos días, {0}'}" FontSize="32" Margin="0" />
-                        <Label Text="Este es el resumen de actividad de hoy." TextColor="{StaticResource Gris}" Margin="0" />
+                        <Label Text="Este es el resumen de actividad de hoy." TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                     </VerticalStackLayout>
 
-                    <Button Grid.Column="1" Text="+  Nuevo turno" BackgroundColor="{StaticResource Azul}"
-                            TextColor="White" CornerRadius="10" HeightRequest="50" VerticalOptions="End"
+                    <Button Grid.Column="1" Text="+  Nuevo turno" BackgroundColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                            TextColor="{AppThemeBinding Light={StaticResource TextoSobrePrimarioClaro}, Dark={StaticResource TextoSobrePrimarioOscuro}}" CornerRadius="10" HeightRequest="50" VerticalOptions="End"
                             Clicked="OnNuevoTurno" Margin="0" />
                 </Grid>
 
                 <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12" Margin="0" Padding="0">
                     <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0">
                         <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
-                            <Label Text="Turnos de hoy" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="Turnos de hoy" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                             <Label Text="{Binding TurnosHoy}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0">
                         <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
-                            <Label Text="Pacientes atendidos" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="Pacientes atendidos" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                             <Label Text="{Binding Atendidos}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Grid.Column="2" Style="{StaticResource Card}" Margin="0">
                         <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
-                            <Label Text="En sala de espera" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="En sala de espera" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                             <Label Text="{Binding EnEspera}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Grid.Column="3" Style="{StaticResource Card}" Margin="0">
                         <VerticalStackLayout Spacing="6" Padding="0" Margin="0">
-                            <Label Text="Insumos críticos" TextColor="{StaticResource Gris}" Margin="0" />
+                            <Label Text="Insumos críticos" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                             <Label Text="{Binding InsumosCriticos}" FontSize="28" FontAttributes="Bold" Margin="0" />
                         </VerticalStackLayout>
                     </Border>
@@ -106,20 +106,20 @@
                                         <Grid ColumnDefinitions="80,*,*,100" Padding="0" Margin="0">
                                             <VerticalStackLayout Padding="0" Margin="0">
                                                 <Label Text="{Binding Hora}" FontAttributes="Bold" Margin="0" />
-                                                <Label Text="{Binding Duracion}" FontSize="12" TextColor="{StaticResource Gris}" Margin="0" />
+                                                <Label Text="{Binding Duracion}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                                             </VerticalStackLayout>
                                             <VerticalStackLayout Grid.Column="1" Padding="0" Margin="0">
                                                 <Label Text="{Binding Paciente}" FontAttributes="Bold" Margin="0" />
-                                                <Label Text="{Binding Dni}" FontSize="12" TextColor="{StaticResource Gris}" Margin="0" />
+                                                <Label Text="{Binding Dni}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                                             </VerticalStackLayout>
                                             <Label Grid.Column="2" Text="{Binding Profesional}" Margin="0" />
-                                            <Label Grid.Column="3" Text="{Binding Estado}" FontAttributes="Bold" TextColor="{StaticResource Azul}" Margin="0">
+                                            <Label Grid.Column="3" Text="{Binding Estado}" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}" Margin="0">
                                                 <Label.Triggers>
                                                     <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="Confirmado">
-                                                        <Setter Property="TextColor" Value="Green" />
+                                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExitoClaro}, Dark={StaticResource ExitoOscuro}}" />
                                                     </DataTrigger>
                                                     <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="En espera">
-                                                        <Setter Property="TextColor" Value="Orange" />
+                                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource AdvertenciaClaro}, Dark={StaticResource AdvertenciaOscuro}}" />
                                                     </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
@@ -139,9 +139,9 @@
                                         <Grid ColumnDefinitions="*,Auto" Padding="0" Margin="0">
                                             <VerticalStackLayout Padding="0" Margin="0">
                                                 <Label Text="{Binding Nombre}" FontAttributes="Bold" Margin="0" />
-                                                <Label Text="{Binding Sector}" FontSize="12" TextColor="{StaticResource Gris}" Margin="0" />
+                                                <Label Text="{Binding Sector}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" Margin="0" />
                                             </VerticalStackLayout>
-                                            <Label Grid.Column="1" Text="{Binding Stock, StringFormat='{0} u.'}" TextColor="Red" VerticalOptions="Center" Margin="0" />
+                                            <Label Grid.Column="1" Text="{Binding Stock, StringFormat='{0} u.'}" TextColor="{AppThemeBinding Light={StaticResource ErrorClaro}, Dark={StaticResource ErrorOscuro}}" VerticalOptions="Center" Margin="0" />
                                         </Grid>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>

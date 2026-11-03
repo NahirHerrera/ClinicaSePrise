@@ -15,9 +15,9 @@ public partial class AdministracionPage : ContentPage
     readonly int mes = DateTime.Today.Month;
     string Periodo => $"{Ar.TextInfo.ToTitleCase(Ar.DateTimeFormat.GetMonthName(mes))} {anio}";
 
-    readonly GraficoBarras grAtendidos = new() { ColorBarra = Color.FromArgb("#2563EB") };
+    readonly GraficoBarras grAtendidos = new() { ColorBarra = Color.FromArgb("#2BB3BC") };
     readonly GraficoBarras grFacturado = new() { ColorBarra = Color.FromArgb("#16A34A") };
-    readonly GraficoBarras grEstados = new() { ColorBarra = Color.FromArgb("#0EA5E9") };
+    readonly GraficoBarras grEstados = new() { ColorBarra = Color.FromArgb("#8FD0E0") };
 
     // Lo último que se calculó, para registrar exactamente eso
     ProfesionalItem? medicoCalculado;
@@ -32,6 +32,9 @@ public partial class AdministracionPage : ContentPage
         gvAtendidos.Drawable = grAtendidos;
         gvFacturado.Drawable = grFacturado;
         gvEstados.Drawable = grEstados;
+        GraficoBarras.RedibujarAlCambiarTema(gvAtendidos);
+        GraficoBarras.RedibujarAlCambiarTema(gvFacturado);
+        GraficoBarras.RedibujarAlCambiarTema(gvEstados);
         dpFalta.Date = DateTime.Today;
 
         // La vista se muestra dentro de MainPage y OnAppearing no se dispara: cargamos acá

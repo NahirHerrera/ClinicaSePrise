@@ -2,111 +2,123 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClinicaSePrise.Vistas.LoginPage"
-             BackgroundColor="#F5F6F8"
+             BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource FondoOscuro}}"
              NavigationPage.HasNavigationBar="False">
-    
-    <Grid BackgroundColor="#F5F6F8">
 
-    <Border VerticalOptions="Center"
+    <Grid BackgroundColor="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource FondoOscuro}}">
+
+        <Border VerticalOptions="Center"
                 HorizontalOptions="Center"
                 WidthRequest="420"
                 StrokeShape="RoundRectangle 10"
-                Stroke="Transparent"
-                BackgroundColor="White"
+                Stroke="{AppThemeBinding Light=Transparent, Dark={StaticResource BordeOscuro}}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource SuperficieOscuro}}"
                 Padding="30,25">
-        <Border.Shadow>
-            <Shadow Opacity="0.1" Radius="8" Offset="0,2" />
-        </Border.Shadow>
+            <Border.Shadow>
+                <Shadow Opacity="0.1" Radius="8" Offset="0,2" />
+            </Border.Shadow>
 
-        <ScrollView VerticalScrollBarVisibility="Never">
-            <VerticalStackLayout Spacing="12">
+            <ScrollView VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Spacing="12">
 
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <!-- El logo tiene fondo blanco: el círculo blanco lo integra también en modo oscuro -->
+                        <Border StrokeShape="Ellipse"
+                                Stroke="Transparent"
+                                BackgroundColor="White"
+                                HeightRequest="80"
+                                WidthRequest="80"
+                                Padding="5"
+                                HorizontalOptions="Center">
+                            <Image Source="logo_clinica.jpeg"
+                                   HeightRequest="70"
+                                   WidthRequest="70"
+                                   Aspect="AspectFit"
+                                   HorizontalOptions="Center" />
+                        </Border>
 
-                <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
-                    <Image Source="logo_clinica.jpeg"
-                               HeightRequest="70"
-                               WidthRequest="70"
-                               Aspect="AspectFit"
-                               HorizontalOptions="Center" />
-
-                    <Label Text="Clínica SePrise"
+                        <Label Text="Clínica SePrise"
                                FontSize="24"
                                FontAttributes="Bold"
-                               TextColor="#1E293B"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
                                HorizontalOptions="Center" />
 
-                    <Label Text="Salud y Cuidado"
+                        <Label Text="Salud y Cuidado"
                                FontSize="13"
-                               TextColor="#64748B"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
                                HorizontalOptions="Center" />
-                </VerticalStackLayout>
+                    </VerticalStackLayout>
 
 
-                <Label Text="Iniciar Sesión"
+                    <Label Text="Iniciar Sesión"
                            FontSize="16"
                            FontAttributes="Bold"
-                           TextColor="#334155"
+                           TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
                            Margin="0,5,0,0" />
 
 
-                <Border x:Name="FrameError"
-                            BackgroundColor="#FEE2E2"
-                            Stroke="#FCA5A5"
+                    <Border x:Name="FrameError"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource ErrorFondoClaro}, Dark={StaticResource ErrorFondoOscuro}}"
+                            Stroke="{AppThemeBinding Light={StaticResource ErrorBordeClaro}, Dark={StaticResource ErrorBordeOscuro}}"
                             StrokeShape="RoundRectangle 8"
                             Padding="10"
                             IsVisible="False">
-                    <Label x:Name="LblError"
+                        <Label x:Name="LblError"
                                Text="Usuario o contraseña incorrectos"
-                               TextColor="#991B1B"
+                               TextColor="{AppThemeBinding Light={StaticResource ErrorTextoClaro}, Dark={StaticResource ErrorTextoOscuro}}"
                                FontSize="13"
                                HorizontalOptions="Center" />
-                </Border>
+                    </Border>
 
 
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="Usuario"
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Usuario"
                                FontSize="13"
                                FontAttributes="Bold"
-                               TextColor="#475569" />
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
 
-                    <Border Stroke="#CBD5E1"
+                        <Border Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
                                 StrokeShape="RoundRectangle 10"
                                 StrokeThickness="1"
                                 Padding="12,0">
-                        <Entry x:Name="TxtUsuario"
+                            <Entry x:Name="TxtUsuario"
+                                   ClassId="SinBorde"
                                    Placeholder="Ej. jperez"
-                                   PlaceholderColor="#94A3B8"
-                                   TextColor="#1E293B"
+                                   PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
                                    HeightRequest="42"
                                    ClearButtonVisibility="WhileEditing" />
-                    </Border>
-                </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
 
-                <!-- Campo de Contraseña -->
+                    <!-- Campo de Contraseña -->
                     <VerticalStackLayout Spacing="4">
                         <Label Text="Contraseña"
-           FontSize="13"
-           FontAttributes="Bold"
-           TextColor="#475569" />
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
 
-                        <Border Stroke="#CBD5E1"
-            StrokeShape="RoundRectangle 10"
-            StrokeThickness="1"
-            Padding="12,0">
+                        <Border Stroke="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}"
+                                StrokeShape="RoundRectangle 10"
+                                StrokeThickness="1"
+                                Padding="12,0">
                             <Entry x:Name="TxtPassword"
-               IsPassword="True"
-               Placeholder="••••••••"
-               PlaceholderColor="#94A3B8"
-               TextColor="#1E293B"
-               HeightRequest="42" />
+                                   ClassId="SinBorde"
+                                   IsPassword="True"
+                                   Placeholder="••••••••"
+                                   PlaceholderColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}"
+                                   HeightRequest="42" />
                         </Border>
 
                         <!-- Enlace de recuperación limpio y alineado a la derecha -->
                         <Label Text="¿Olvidaste tu contraseña?"
-           FontSize="12"
-           TextColor="#2563EB"
-           HorizontalOptions="End"
-           Margin="0,2,0,10">
+                               FontSize="12"
+                               TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                               HorizontalOptions="End"
+                               Margin="0,2,0,10">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnForgotPasswordTapped" />
                             </Label.GestureRecognizers>
@@ -115,10 +127,10 @@
 
 
                     <!-- Botón de Ingreso -->
-                <Button x:Name="BtnIngresar"
+                    <Button x:Name="BtnIngresar"
                             Text="Ingresar al Sistema"
-                            BackgroundColor="#2563EB"
-                            TextColor="White"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                            TextColor="{AppThemeBinding Light={StaticResource TextoSobrePrimarioClaro}, Dark={StaticResource TextoSobrePrimarioOscuro}}"
                             FontAttributes="Bold"
                             CornerRadius="10"
                             HeightRequest="44"
@@ -126,18 +138,21 @@
                             Clicked="OnIngresarClicked" />
 
 
-                <ActivityIndicator x:Name="IndicadorCarga"
+                    <ActivityIndicator x:Name="IndicadorCarga"
                                        IsRunning="False"
                                        IsVisible="False"
-                                       Color="#2563EB"
+                                       Color="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
                                        HorizontalOptions="Center" />
 
 
                     <Label HorizontalOptions="Center">
                         <Label.FormattedText>
                             <FormattedString>
-                                <Span Text="¿No estás registrado? Hacé clic " TextColor="#64748B" />
-                                <Span Text="aquí" TextColor="#2563EB" TextDecorations="Underline" />
+                                <Span Text="¿No estás registrado? Hacé clic "
+                                      TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
+                                <Span Text="aquí"
+                                      TextColor="{AppThemeBinding Light={StaticResource PrimarioClaro}, Dark={StaticResource PrimarioOscuro}}"
+                                      TextDecorations="Underline" />
                             </FormattedString>
                         </Label.FormattedText>
                         <Label.GestureRecognizers>
@@ -146,7 +161,7 @@
                     </Label>
 
                 </VerticalStackLayout>
-        </ScrollView>
-    </Border>
+            </ScrollView>
+        </Border>
     </Grid>
 </ContentPage>

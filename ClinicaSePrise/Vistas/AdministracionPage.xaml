@@ -4,7 +4,7 @@
              xmlns:ent="clr-namespace:ClinicaSePrise.Entidades"
              x:Class="ClinicaSePrise.Vistas.AdministracionPage"
              Title="Panel de Administración"
-             BackgroundColor="#F8FAFC">
+             BackgroundColor="{AppThemeBinding Light={StaticResource FondoClaro}, Dark={StaticResource FondoOscuro}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="🚪 Cerrar Sesión"
@@ -14,19 +14,19 @@
 
     <ContentPage.Resources>
         <Style x:Key="Tarjeta" TargetType="Border">
-            <Setter Property="BackgroundColor" Value="White" />
-            <Setter Property="Stroke" Value="#E2E8F0" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SuperficieClaro}, Dark={StaticResource SuperficieOscuro}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BordeClaro}, Dark={StaticResource BordeOscuro}}" />
             <Setter Property="StrokeShape" Value="RoundRectangle 12" />
             <Setter Property="Padding" Value="16" />
         </Style>
         <Style x:Key="Titulo" TargetType="Label">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontAttributes" Value="Bold" />
-            <Setter Property="TextColor" Value="#1E293B" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
         </Style>
         <Style x:Key="Ayuda" TargetType="Label">
             <Setter Property="FontSize" Value="12" />
-            <Setter Property="TextColor" Value="#64748B" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
         </Style>
     </ContentPage.Resources>
 
@@ -34,8 +34,8 @@
         <VerticalStackLayout Padding="20" Spacing="18">
 
             <VerticalStackLayout Spacing="4">
-                <Label x:Name="lblBienvenida" FontSize="14" TextColor="Gray" FontAttributes="Bold" />
-                <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="#0F172A" />
+                <Label x:Name="lblBienvenida" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" FontAttributes="Bold" />
+                <Label Text="Administración General y Liquidaciones" FontSize="22" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextoClaro}, Dark={StaticResource TextoOscuro}}" />
                 <Label x:Name="lblPeriodo" Style="{StaticResource Ayuda}" />
             </VerticalStackLayout>
 
@@ -57,11 +57,11 @@
                         <VerticalStackLayout x:Name="stDetalle" Spacing="2">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="ent:ConsultaLiquidada">
-                                    <Label Text="{Binding Texto}" FontSize="12" TextColor="#334155" />
+                                    <Label Text="{Binding Texto}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextoSuaveClaro}, Dark={StaticResource TextoSuaveOscuro}}" />
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
                         </VerticalStackLayout>
-                        <Button x:Name="btnRegistrarLiquidacion" Text="Registrar liquidación" BackgroundColor="#16A34A"
+                        <Button x:Name="btnRegistrarLiquidacion" Text="Registrar liquidación" BackgroundColor="{StaticResource Exito}"
                                 TextColor="White" HorizontalOptions="Start" Clicked="OnRegistrarLiquidacion" />
                     </VerticalStackLayout>
 
